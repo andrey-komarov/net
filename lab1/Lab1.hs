@@ -1,8 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Network.Socket hiding (sendTo, recvFrom)
 import Network.Socket.ByteString
+import System.Posix.User
+import Network.HostName
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Data.ByteString.Char8 (pack)
 
 import Data.Time
 import System.Time
@@ -94,9 +97,7 @@ currentUnixTime64 = do
     return $ fromIntegral t
 
 mkMsg :: IO Msg
-mkMsg = do
-    t <- currentUnixTime64
-    return $ Msg 0 "melchior" t "komarov"
+mkMsg = Msg 0 <$> (pack <$> getLoginName) <*> currentUnixTime64 <*> (pack <$> getHostName)
 
 infoPrinter :: MVar Messages -> IO ()
 infoPrinter state = do
