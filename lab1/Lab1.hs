@@ -6,6 +6,7 @@ import Network.HostName
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import Data.ByteString.Char8 (pack)
+import qualified Data.ByteString.Char8 as BS8
 
 import Data.Time
 import System.Time
@@ -16,6 +17,7 @@ import Data.Monoid
 import Data.Word
 import Data.Function
 import Data.List
+import Data.Bits
 
 import Text.Printf
 
@@ -27,7 +29,7 @@ import qualified Data.Map as M
 port = 1234
 sendTimeout = 1000000
 killTimeout = 15000000
-printTimeout = 5000000
+printTimeout = 1000000
 
 hostnameLength = 20
 usernameLength = 20
@@ -90,15 +92,20 @@ instance Binary Msg where
 
 instance Show Msg where
     show (Msg host hostname time user) = unwords 
-        [show host, show hostname, (show $ TOD (fromIntegral time) 0), show user]
+        [show (hostAddressToString host), show hostname, (show $ TOD (fromIntegral time) 0), show user]
 
 currentUnixTime64 :: IO Word64
 currentUnixTime64 = do
     TOD t _ <- getClockTime
     return $ fromIntegral t
 
-mkMsg :: IO Msg
-mkMsg = Msg 0 <$> (pack <$> getLoginName) <*> currentUnixTime64 <*> (pack <$> getHostName)
+myAddr :: MVar Messages -> IO HostAddress
+myAddr m = do
+    Messages _ _ a <- readMVar m
+    return a
+
+mkMsg :: MVar Messages -> IO Msg
+mkMsg m = Msg <$> myAddr m <*> (pack <$> getLoginName) <*> currentUnixTime64 <*> (pack <$> getHostName)
 
 infoPrinter :: MVar Messages -> IO ()
 infoPrinter state = do
@@ -109,37 +116,39 @@ infoPrinter state = do
 
 hostFromSockAddr (SockAddrInet _ a) = a
 
-server :: IO ()
-server = do
-    host <- getHostName
+hostAddressToString :: HostAddress -> BS.ByteString
+hostAddressToString a = BS.intercalate (BS.pack [46]) $ 
+    map (\sh -> BS8.pack $ show $ (a `shiftR` sh) .&. 255) [0, 8, 16, 24]
+
+server :: MVar Messages -> IO ()
+server state = do
     addr <- head <$> getAddrInfo
         (Just (defaultHints {addrFlags = [AI_PASSIVE]}))
-        (Just host) (Just $ show port)
-    print $ hostFromSockAddr $ addrAddress $ addr
-    state <- newMVar $ emptyMessages $ hostFromSockAddr $ addrAddress addr
-    forkIO $ infoPrinter state
+        Nothing (Just $ show port)
     sock <- socket (addrFamily addr) Datagram defaultProtocol
     bind sock (addrAddress addr)
     loop state sock
  where
     loop state sock = do
         (t, addr) <- recvFrom sock 100
-        let msg = decode $ BSL.fromStrict t
-        modifyMVar_ state $ \(Messages counts handlers a) -> do
-            let newCounts = M.insertWith (+) msg 1 counts
-            case M.lookup msg handlers of
-                Just h -> killThread h
-                Nothing -> return ()
-            tid <- forkIO $ do
-                threadDelay killTimeout
-                removeFromMessages msg state
-            let newHandlers = M.insert msg tid handlers
-            return $ Messages newCounts newHandlers a
+        let msg = decodeOrFail $ BSL.fromStrict t
+        case msg of 
+            Left _ -> putStrLn $ "Can't parse: " ++ show msg
+            Right (_, _, msg) -> modifyMVar_ state $ \(Messages counts handlers a) -> do
+                let newCounts = M.insertWith (+) msg 1 counts
+                case M.lookup msg handlers of
+                    Just h -> killThread h
+                    Nothing -> return ()
+                tid <- forkIO $ do
+                    threadDelay killTimeout
+                    removeFromMessages msg state
+                let newHandlers = M.insert msg tid handlers
+                return $ Messages newCounts newHandlers a
         loop state sock
         
 
-client :: IO ()
-client = do 
+client :: MVar Messages -> IO ()
+client m = do 
     addr <- head <$> getAddrInfo Nothing (Just "255.255.255.255") (Just $ show port)
     sock <- socket (addrFamily addr) Datagram defaultProtocol
     setSocketOption sock Broadcast 1
@@ -147,12 +156,19 @@ client = do
  where 
     loop :: (BS.ByteString -> IO ()) -> IO ()
     loop send = do
-        msg <- mkMsg
+        msg <- mkMsg m
         send $ BSL.toStrict $ encode msg
         threadDelay sendTimeout
         loop send
 
 
 main = do
-    forkIO server
-    client
+    host <- getHostName
+    myAddr <- hostFromSockAddr <$> addrAddress <$> head <$> getAddrInfo
+        (Just (defaultHints {addrFlags = [AI_PASSIVE]}))
+        (Just host) (Just $ show port)
+    print $ myAddr
+    state <- newMVar $ emptyMessages $ myAddr
+    forkIO $ infoPrinter state
+    forkIO $ server state
+    client state
