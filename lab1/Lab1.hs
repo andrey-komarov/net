@@ -35,21 +35,22 @@ usernameLength = 20
 data Messages = Messages
     { messagesCounts :: M.Map Msg Int
     , messagesKillerHandler :: M.Map Msg ThreadId
+    , myHost :: HostAddress
     }
 
 instance Show Messages where
-    show (Messages c _) = let s = sortBy (compare `on` snd) (M.toList c) 
-                              pp (msg, cnt) = (printf "%5d : %s" cnt $ show msg :: String)
-                              len = maximum $ 5: (map (length . pp) $ M.toList c)
-                          in unlines $ [replicate len '='] ++ map pp (M.toList c) 
+    show (Messages c _ _) = let s = sortBy (compare `on` snd) (M.toList c) 
+                                pp (msg, cnt) = (printf "%5d : %s" cnt $ show msg :: String)
+                                len = maximum $ 5: (map (length . pp) $ M.toList c)
+                            in unlines $ [replicate len '='] ++ map pp (M.toList c) 
                                 ++ [replicate len '=']
 
-emptyMessages :: Messages
-emptyMessages = Messages M.empty M.empty
+emptyMessages :: HostAddress -> Messages
+emptyMessages = Messages M.empty M.empty 
 
 removeFromMessages :: Msg -> MVar Messages -> IO ()
 removeFromMessages msg state = modifyMVar_ state $ 
-    \(Messages c h) -> return $ Messages (M.delete msg c) (M.delete msg h)
+    \(Messages c h n) -> return $ Messages (M.delete msg c) (M.delete msg h) n
 
 data Msg = Msg 
     { msgHostFrom :: HostAddress
@@ -106,13 +107,17 @@ infoPrinter state = do
     threadDelay printTimeout
     infoPrinter state
 
+hostFromSockAddr (SockAddrInet _ a) = a
+
 server :: IO ()
 server = do
-    state <- newMVar $ emptyMessages
-    forkIO $ infoPrinter state
+    host <- getHostName
     addr <- head <$> getAddrInfo
         (Just (defaultHints {addrFlags = [AI_PASSIVE]}))
-        Nothing (Just $ show port)
+        (Just host) (Just $ show port)
+    print $ hostFromSockAddr $ addrAddress $ addr
+    state <- newMVar $ emptyMessages $ hostFromSockAddr $ addrAddress addr
+    forkIO $ infoPrinter state
     sock <- socket (addrFamily addr) Datagram defaultProtocol
     bind sock (addrAddress addr)
     loop state sock
@@ -120,7 +125,7 @@ server = do
     loop state sock = do
         (t, addr) <- recvFrom sock 100
         let msg = decode $ BSL.fromStrict t
-        modifyMVar_ state $ \(Messages counts handlers) -> do
+        modifyMVar_ state $ \(Messages counts handlers a) -> do
             let newCounts = M.insertWith (+) msg 1 counts
             case M.lookup msg handlers of
                 Just h -> killThread h
@@ -129,7 +134,7 @@ server = do
                 threadDelay killTimeout
                 removeFromMessages msg state
             let newHandlers = M.insert msg tid handlers
-            return $ Messages newCounts newHandlers
+            return $ Messages newCounts newHandlers a
         loop state sock
         
 
