@@ -19,6 +19,8 @@ import Data.Function
 import Data.List
 import Data.Bits
 
+import Control.Exception
+
 import Text.Printf
 
 import Control.Concurrent
@@ -26,8 +28,8 @@ import Control.Applicative
 
 import qualified Data.Map as M
 
-port = 1234
-sendTimeout = 1000000
+port = 4321
+sendTimeout = 500000
 killTimeout = 15000000
 printTimeout = 1000000
 
@@ -78,23 +80,22 @@ unZero = BS.takeWhile (/= 0)
 
 instance Binary Msg where
     put (Msg host hostname time user) = do
-        put host
-        putByteString $ hostname `expandTo` hostnameLength
-        put time
+        putWord32le host
         putByteString $ user `expandTo` usernameLength
+        put time
+        putByteString $ hostname `expandTo` hostnameLength
     
     get = do
         host <- get 
-        hostname <- unZero <$> getByteString hostnameLength
-        time <- get
         user <- unZero <$> getByteString usernameLength
+        time <- get
+        hostname <- unZero <$> getByteString hostnameLength
         return $ Msg host hostname time user
 
 instance Show Msg where
     show (Msg host hostname time user) = unwords 
         [show (hostAddressToString host), show hostname, (show $ TOD (fromIntegral time) 0), show user]
 
-currentUnixTime64 :: IO Word64
 currentUnixTime64 = do
     TOD t _ <- getClockTime
     return $ fromIntegral t
@@ -110,7 +111,7 @@ mkMsg m = Msg <$> myAddr m <*> (pack <$> getLoginName) <*> currentUnixTime64 <*>
 infoPrinter :: MVar Messages -> IO ()
 infoPrinter state = do
     a <- readMVar state
-    print a
+    print a --  `catch` \(e :: IO -> return ()
     threadDelay printTimeout
     infoPrinter state
 
@@ -118,7 +119,7 @@ hostFromSockAddr (SockAddrInet _ a) = a
 
 hostAddressToString :: HostAddress -> BS.ByteString
 hostAddressToString a = BS.intercalate (BS.pack [46]) $ 
-    map (\sh -> BS8.pack $ show $ (a `shiftR` sh) .&. 255) [0, 8, 16, 24]
+    map (\sh -> BS8.pack $ show $ (a `shiftR` sh) .&. 255) [24, 16, 8, 0]
 
 server :: MVar Messages -> IO ()
 server state = do
@@ -133,7 +134,7 @@ server state = do
         (t, addr) <- recvFrom sock 100
         let msg = decodeOrFail $ BSL.fromStrict t
         case msg of 
-            Left _ -> putStrLn $ "Can't parse: " ++ show msg
+            Left _ -> putStrLn $ "Can't parse: " ++ show (BS.unpack t)
             Right (_, _, msg) -> modifyMVar_ state $ \(Messages counts handlers a) -> do
                 let newCounts = M.insertWith (+) msg 1 counts
                 case M.lookup msg handlers of
@@ -165,9 +166,8 @@ client m = do
 main = do
     host <- getHostName
     myAddr <- hostFromSockAddr <$> addrAddress <$> head <$> getAddrInfo
-        (Just (defaultHints {addrFlags = [AI_PASSIVE]}))
+        (Just (defaultHints {addrFlags = [AI_PASSIVE], addrFamily = AF_INET}))
         (Just host) (Just $ show port)
-    print $ myAddr
     state <- newMVar $ emptyMessages $ myAddr
     forkIO $ infoPrinter state
     forkIO $ server state
