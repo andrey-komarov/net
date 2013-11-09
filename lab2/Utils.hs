@@ -1,5 +1,5 @@
 module Utils (
-    myMAC, currentTimeMillis, hostAddressToString
+    myMAC, currentTimeMillis, hostAddressToString, ppTime
 ) where
 
 import Data.Time
@@ -17,6 +17,11 @@ import qualified Data.ByteString.Char8 as BS8
 import Data.Bits
 import Data.Char
 import Data.List
+
+type Time = Word64
+
+ppTime :: Time -> String
+ppTime t = show (TOD (fromIntegral (t `div` 1000)) 0)
 
 currentTimeMillis :: IO Word64
 currentTimeMillis = (\(TOD t _) -> fromIntegral t * 1000) <$> getClockTime  

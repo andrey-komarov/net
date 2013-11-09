@@ -10,6 +10,7 @@ import Data.Binary.Get
 import Data.Binary.Put
 import Network.Info
 import Control.Applicative
+import qualified Data.ByteString.UTF8 as BSU
 import qualified Data.ByteString as BS
 
 data ChatMessage = ChatMessage {
@@ -18,6 +19,10 @@ data ChatMessage = ChatMessage {
     messageLen :: !Word32,
     message :: BS.ByteString
 }
+
+instance Show ChatMessage where
+    show (ChatMessage t mac len msg) = show mac ++ "(at " ++ ppTime t ++ "): " 
+        ++ BSU.toString msg
 
 instance Binary ChatMessage where
     put (ChatMessage time id len msg) = do

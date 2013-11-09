@@ -11,36 +11,33 @@ import UDPReceiver
 import UDPBroadcaster
 import TCPReceiver
 import HeartBeatProtocol
+import ChatMessageProtocol
+import Utils
 
 import Control.Concurrent
 
 import Control.Monad
 
-import Graphics.UI.WX hiding (Event)
+import Graphics.UI.WX hiding (Event, on)
 import Reactive.Banana
 import Reactive.Banana.WX
 
 import qualified Data.Map as M
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.UTF8 as BSU
 import Data.Word
 import Network.Info
 import System.Time
 import Network.Socket
 import Data.Semigroup
+import Data.List
+import Data.Function
 
-type ChatMessage = String
 type Time = Word64
-
-data Message = Message {
-    messageText :: BSU.ByteString,
-    messageTime :: Time
-}
 
 data User = User {
     userLastTime :: !Time,
     userSockAddr :: !SockAddr,
-    userNonSentMsgs :: [Message]
+    userNonSentMsgs :: [ChatMessage]
 }
 
 instance Semigroup User where
@@ -53,9 +50,8 @@ updateUsers (h, addr) = M.insertWith (<>) (idHB h) (User (timestampHB h) addr []
 
 showUser :: (MAC, User) -> [String]
 showUser (mac, u) = [
-                show mac ++ " : " ++ 
-                show (TOD (fromIntegral ((userLastTime u) `div` 1000)) 0)] ++
-                    [ (show . messageText) msg | msg <- userNonSentMsgs u]
+                show mac ++ " : " ++ (ppTime (userLastTime u))] ++
+                    [ (show . message) msg | msg <- userNonSentMsgs u]
 
 {-----------------------------------------------------------------------------
     Main
@@ -67,6 +63,7 @@ main = start $ do
     finput  <- entry f [processEnter := True]
 
     (recvH, recvFire) <- newAddHandler
+    (msgIn :: AddHandler (ChatMessage, SockAddr), msgFire) <- newAddHandler
 
     set f [layout := margin 10 $ grid 10 10
                 [[row 10 [minsize (sz 500 500) (widget chat)
@@ -79,6 +76,7 @@ main = start $ do
         networkDescription = do
         
         eBroadcast <- fromAddHandler recvH
+        ePost <- fromAddHandler msgIn
         let eMACs = fmap (show . idHB . fst) eBroadcast
 
         eChat <- event0 finput command
@@ -88,22 +86,25 @@ main = start $ do
         let
             (bmsg :: Behavior t String) = stepper "" emsg
 
-            bChatMessages :: Behavior t [ChatMessage]
-            bChatMessages = accumB [] $ unions [
-                      (:) <$> bmsg <@ eChat
-                    , (:) <$> eMACs
+            bAllMessages :: Behavior t [ChatMessage]
+            bAllMessages = accumB [] $ unions [
+                (:) <$> fmap fst ePost
              ]
+
+            bChat :: Behavior t [String]
+            bChat = reverse <$> map show <$> sortBy (compare `on` timestampCM) 
+                            <$> bAllMessages
 
             bUsers :: Behavior t Users
             bUsers = accumB M.empty $ unions [
                     updateUsers <$> eBroadcast
              ]
 
-        sink chat   [items :== reverse <$> bChatMessages]
+        sink chat [items :== bChat]
         sink clients [items :== reverse <$> (concatMap showUser) <$> M.toList <$> bUsers]
 
     network <- compile networkDescription    
     actuate network
     forkIO broadcaster
     forkIO $ broadcastReceiver recvFire
-    forkIO $ chatReceiver undefined
+    forkIO $ chatReceiver msgFire

@@ -34,11 +34,14 @@ chatReceiver callback = do
     sock <- initSocket
     forever $ do
         (do
+            print "accepting"
             (s, addr) <- accept sock
+            print "accepted, transforming to handle"
             h <- socketToHandle s ReadMode
+            print "transformtd, parsing data"
             t <- BSL.hGetContents h
-            hClose h
-            forkIO ((callback (decode t, addr)) ) >> return ()) `catch` handler
+            print "closed"
+            forkIO ((callback (decode t, addr))  )>> return() ) `catch` handler
  where 
     handler :: SomeException -> IO ()
-    handler _ = return ()
+    handler e = undefined
