@@ -12,6 +12,8 @@ import Network.Socket
 import Network.Socket.ByteString
 import qualified Data.ByteString.Lazy as BSL
 
+import Utils
+import System.Time
 timeout = 5000000
 port = 1235
 
@@ -34,4 +36,5 @@ broadcaster = do
     sock <- initSocket
     forever $ do
         currentHeartBeat >>= broadcast sock
+        t <- currentTimeMillis
         threadDelay timeout 
