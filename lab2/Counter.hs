@@ -106,4 +106,4 @@ main = start $ do
     actuate network
     forkIO broadcaster
     forkIO $ broadcastReceiver recvFire
-    forkIO $ chatReceiver
+    forkIO $ chatReceiver undefined

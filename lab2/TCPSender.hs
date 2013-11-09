@@ -15,12 +15,16 @@ import Data.Binary
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import System.IO
+import Control.Exception
 
 port = 1236
 
-chatSender :: (SockAddr, ChatMessage) -> IO ()
-chatSender (SockAddrInet _ host, msg) = send
+chatSender :: (SockAddr, ChatMessage) -> IO () -> IO () -> IO ()
+chatSender (SockAddrInet _ host, msg) ok fail = send >> ok `catch` handle
  where
+    handle :: SomeException -> IO ()
+    handle = const fail
+
     send = do
         addr <- head <$> getAddrInfo Nothing 
                         (Just $ hostAddressToString host)
