@@ -53,68 +53,70 @@ showUser (mac, u) = [
                 show mac ++ " : " ++ (ppTime (userLastTime u))] ++
                     [ (show . message) msg | msg <- userNonSentMsgs u]
 
+third :: (a, b, c) -> c
+third (_, _, c) = c
+
+snd3 :: (a, b, c) -> b
+snd3 (_, b, _) = b
+
+fst3 :: (a, b, c) -> a
+fst3 (a, _, _) = a
+
 {-----------------------------------------------------------------------------
     Main
 ------------------------------------------------------------------------------}
 main = start $ do
-    f       <- frame [text := "Counter"]
-    chat    <- singleListBox f []
-    clients <- singleListBox f []
-    finput  <- entry f [processEnter := True]
+    f        <- frame [text := "Counter"]
+    wChat    <- singleListBox f []
+    wClients <- singleListBox f []
+    wInput   <- entry f [processEnter := True]
 
-    (recvH, recvFire) <- newAddHandler
-    (msgIn, msgFire) <- newAddHandler
-    (failedH, failedFire) <- newAddHandler
+    (hCantSend, fireCantSend) <- newAddHandler
+    (hNewUDP,   fireNewUDP)   <- newAddHandler
+    (hNewTCP,   fireNewTCP)   <- newAddHandler
 
     set f [layout := margin 10 $ grid 10 10
-                [[row 10 [minsize (sz 500 500) (widget chat)
-                         ,minsize (sz 400 500) (widget clients)
+                [[row 10 [minsize (sz 500 500) (widget wChat)
+                         ,minsize (sz 400 500) (widget wClients)
                          ]]
-                ,[expand (widget finput)]
+                ,[expand (widget wInput)]
                 ]]
 
     let networkDescription :: forall t. Frameworks t => Moment t ()
         networkDescription = do
 
-        eBroadcast <- fromAddHandler recvH
-        ePost <- fromAddHandler msgIn
+        
+        eNewUDP :: Event t (HeartBeat, SockAddr, Time) <- fromAddHandler hNewUDP
+        eNewTCP   <- fromAddHandler hNewTCP
+        eCantSend <- fromAddHandler hCantSend
 
-        eChat <- event0 finput command
+        eSendMessage <- event0 wInput command
 
-        emsg <- eventText finput
-
+        eCurrentMessageText <- eventText wInput
 
         let
-            (bmsg :: Behavior t String) = stepper "" emsg
-            eSent = bmsg <@ eChat
+            bCurrentMessageText :: Behavior t String
+            bCurrentMessageText = stepper "" eCurrentMessageText
 
-            bAllMessages :: Behavior t [ChatMessage]
-            bAllMessages = accumB [] $ unions [
-                (:) <$> fmap fst ePost
-             ]
+            eMySentMessages :: Event t String
+            eMySentMessages = bCurrentMessageText <@ eCurrentMessageText
 
-            bChat :: Behavior t [String]
-            bChat = reverse <$> map show <$> sortBy (compare `on` timestampCM) 
-                            <$> bAllMessages
+            bAllMySentMessages :: Behavior t [String]
+            bAllMySentMessages = accumB [] $ (:) <$> eMySentMessages
 
-            bUsers :: Behavior t Users
-            bUsers = accumB M.empty $ unions [
-                    updateUsers <$> eBroadcast
-             ]
+            bUserBeenSeenLastTime :: Behavior t (M.Map MAC Time)
+            bUserBeenSeenLastTime = accumB M.empty $ (\(hb, sa, t) -> 
+                M.insertWith max (idHB hb) t) <$> eNewUDP
 
-        let ok = print "ok"
-        let fail = print "fail"
-        let send (addr, msg) = do
-                mac <- myMAC
-                t <- currentTimeMillis
-                chatSender (addr, ChatMessage t mac (BS.length msg) msg)
-        reactimate $ fmap print eSent
+            bClientsItems :: Behavior t [String]
+            bClientsItems = map (\(mac, time) -> show mac ++ " : " ++ ppTime time) <$> 
+                ((M.toList <$> bUserBeenSeenLastTime) :: Behavior t [(MAC, Time)])
 
-        sink chat [items :== bChat]
-        sink clients [items :== reverse <$> (concatMap showUser) <$> M.toList <$> bUsers]
+        --sink chat [items :== bChat]
+        sink wClients [items :== bClientsItems]
 
     network <- compile networkDescription    
     actuate network
     forkIO broadcaster
-    forkIO $ broadcastReceiver recvFire
-    forkIO $ chatReceiver msgFire
+    forkIO $ broadcastReceiver fireNewUDP
+    --forkIO $ chatReceiver msgFire
