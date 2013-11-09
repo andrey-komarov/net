@@ -63,7 +63,8 @@ main = start $ do
     finput  <- entry f [processEnter := True]
 
     (recvH, recvFire) <- newAddHandler
-    (msgIn :: AddHandler (ChatMessage, SockAddr), msgFire) <- newAddHandler
+    (msgIn, msgFire) <- newAddHandler
+    (failedH, failedFire) <- newAddHandler
 
     set f [layout := margin 10 $ grid 10 10
                 [[row 10 [minsize (sz 500 500) (widget chat)
@@ -74,17 +75,18 @@ main = start $ do
 
     let networkDescription :: forall t. Frameworks t => Moment t ()
         networkDescription = do
-        
+
         eBroadcast <- fromAddHandler recvH
         ePost <- fromAddHandler msgIn
-        let eMACs = fmap (show . idHB . fst) eBroadcast
 
         eChat <- event0 finput command
-        
+
         emsg <- eventText finput
+
 
         let
             (bmsg :: Behavior t String) = stepper "" emsg
+            eSent = bmsg <@ eChat
 
             bAllMessages :: Behavior t [ChatMessage]
             bAllMessages = accumB [] $ unions [
@@ -99,6 +101,14 @@ main = start $ do
             bUsers = accumB M.empty $ unions [
                     updateUsers <$> eBroadcast
              ]
+
+        let ok = print "ok"
+        let fail = print "fail"
+        let send (addr, msg) = do
+                mac <- myMAC
+                t <- currentTimeMillis
+                chatSender (addr, ChatMessage t mac (BS.length msg) msg)
+        reactimate $ fmap print eSent
 
         sink chat [items :== bChat]
         sink clients [items :== reverse <$> (concatMap showUser) <$> M.toList <$> bUsers]
