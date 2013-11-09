@@ -21,21 +21,41 @@ import Reactive.Banana
 import Reactive.Banana.WX
 
 import qualified Data.Map as M
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.UTF8 as BSU
 import Data.Word
 import Network.Info
 import System.Time
+import Network.Socket
+import Data.Semigroup
 
 type ChatMessage = String
 type Time = Word64
 
-type Users = M.Map MAC Time
+data Message = Message {
+    messageText :: BSU.ByteString,
+    messageTime :: Time
+}
 
-updateUsers :: HeartBeat -> Users -> Users
-updateUsers h = M.insertWith max (idHB h) (timestampHB h)
+data User = User {
+    userLastTime :: !Time,
+    userSockAddr :: !SockAddr,
+    userNonSentMsgs :: [Message]
+}
 
-showUser :: (MAC, Time) -> String
-showUser (mac, time) = show mac ++ " : " ++ 
-                       show (TOD (fromIntegral (time `div` 1000)) 0)
+instance Semigroup User where
+    User t1 a1 m1 <> User t2 a2 m2 = User (max t1 t2) a1 (m1 <> m2)
+
+type Users = M.Map MAC User
+
+updateUsers :: (HeartBeat, SockAddr) -> Users -> Users
+updateUsers (h, addr) = M.insertWith (<>) (idHB h) (User (timestampHB h) addr [])
+
+showUser :: (MAC, User) -> [String]
+showUser (mac, u) = [
+                show mac ++ " : " ++ 
+                show (TOD (fromIntegral ((userLastTime u) `div` 1000)) 0)] ++
+                    [ (show . messageText) msg | msg <- userNonSentMsgs u]
 
 {-----------------------------------------------------------------------------
     Main
@@ -60,7 +80,6 @@ main = start $ do
         
         eBroadcast <- fromAddHandler recvH
         let eMACs = fmap (show . idHB . fst) eBroadcast
-        let eHeartBeats = fst <$> eBroadcast
 
         eChat <- event0 finput command
         
@@ -77,11 +96,11 @@ main = start $ do
 
             bUsers :: Behavior t Users
             bUsers = accumB M.empty $ unions [
-                    updateUsers <$> eHeartBeats
+                    updateUsers <$> eBroadcast
              ]
 
         sink chat   [items :== reverse <$> bChatMessages]
-        sink clients [items :== (map showUser) <$> M.toList <$> bUsers]
+        sink clients [items :== reverse <$> (concatMap showUser) <$> M.toList <$> bUsers]
 
     network <- compile networkDescription    
     actuate network
