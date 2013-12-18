@@ -13,7 +13,7 @@ import Network.Socket.ByteString
 import qualified Data.ByteString.Lazy as BSL
 
 import System.Time
-timeout = 3000000
+timeout = 2000000
 port = 1235
 
 broadcastAddress = head <$> getAddrInfo Nothing (Just "255.255.255.255") (Just $ show port)

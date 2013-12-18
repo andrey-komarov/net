@@ -9,6 +9,7 @@ import Control.Monad
 import Network.Socket hiding (recvFrom)
 import Network.Socket.ByteString
 import Control.Applicative ((<$>))
+import Control.Concurrent
 
 import Data.Binary
 import qualified Data.ByteString as BS
@@ -18,22 +19,20 @@ import Control.Exception
 
 port = 1236
 
-chatSender :: BS.ByteString -> MVar ChatState -> IO ()
-chatSender msg state = do
-  s <- takeMVar state
+setPort :: SockAddr -> SockAddr
+setPort (SockAddrInet _ a) = SockAddrInet (PortNum 54276) a
 
-  putMVar state undefined
-{- where
-    handle :: SomeException -> IO ()
-    handle = const fail
+sendMsg :: Binary b => SockAddr -> b -> IO ()
+sendMsg sockAddr msg = do
+  sock <- socket AF_INET Stream defaultProtocol
+  connect sock sockAddr
+  h <- socketToHandle sock WriteMode
+  BS.hPut h $ BSL.toStrict $ encode msg
 
-    send = do
-        addr <- head <$> getAddrInfo Nothing 
-                        (Just $ hostAddressToString host)
-                        (Just $ show port)
-        sock <- socket (addrFamily addr) Stream defaultProtocol
-        connect sock (addrAddress addr)
-        h <- socketToHandle sock WriteMode
-        BS.hPut h $ BSL.toStrict $ encode msg
-        hClose h
--}  
+chatSender :: SockAddr -> MVar () -> Chan ChatMessage -> IO ()
+chatSender sock lock messages = forever $ do
+  () <- takeMVar lock
+  msg <- readChan messages
+  let handler = (\e -> writeChan messages msg) :: IOException -> IO ()
+  sendMsg (setPort sock) msg `catch` handler
+  

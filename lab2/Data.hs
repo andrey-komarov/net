@@ -55,6 +55,13 @@ instance Binary ChatMessage where
         msg <- getByteString (fromIntegral len)
         return $ ChatMessage time id len msg
 
+newMessage :: BS.ByteString -> IO ChatMessage
+newMessage s = do
+  t <- currentTimeMillis
+  mac <- myMAC
+  let len = fromIntegral (BS.length s)
+  return $ ChatMessage t mac len s
+
 data Event =
   RecvHeartBeat HeartBeat
   | RecvMessage ChatMessage
@@ -70,8 +77,9 @@ isMessage _ = Nothing
 
              
 data ChatState = ChatState {
-  ableToSendTo :: Map MAC (MVar ())
-  , killerTID :: Map MAC ThreadId
+  ableToSentTo :: Map MAC (MVar ())
+  , workerTID :: Map MAC (MVar ThreadId)
+  , killerTID :: Map MAC (MVar ThreadId)
   , messages :: Chan ChatMessage
   , heartbeats :: Chan HeartBeat
   , events :: Chan Event
@@ -95,10 +103,7 @@ newEmptyChatState = do
   h <- chanFilter isHeartBeat e
   m <- chanFilter isMessage e
   o <- newChan
-  return $ ChatState M.empty M.empty m h e o
-
-newtype UnsentMessages =
-  UnsentMessages (Map MAC (Chan ChatMessage))
+  return $ ChatState M.empty M.empty M.empty m h e o
 
 type Time = Word64
 

@@ -3,6 +3,7 @@ module UDPReceiver (
 ) where
 
 import Data
+import TCPSender
 
 import Network.Socket hiding (recvFrom)
 import Network.Socket.ByteString
@@ -12,6 +13,9 @@ import Control.Monad
 import Control.Applicative ((<$>))
 import Data.Binary
 import Control.Concurrent
+
+import qualified Data.Map as M
+
 
 type Time = Word64
 
@@ -26,11 +30,35 @@ initSocket = do
     bind sock (addrAddress addr)
     return sock
 
-broadcastReceiver :: Chan Event -> IO ()
-broadcastReceiver e = do
-    sock <- initSocket
-    forever $ do
-        (t, addr) <- recvFrom sock 14
-        when (BS.length t == 14) $ do
-          writeChan e $ RecvHeartBeat $ decode (BSL.fromStrict t)
+killer :: ThreadId -> IO ()
+killer tid = do
+  threadDelay 60000000
+  killThread tid
+
+accesser :: MVar () -> IO ()
+accesser lock = forever $ putMVar lock ()
+
+broadcastReceiver :: MVar ChatState -> IO ()
+broadcastReceiver state = do
+  st <- readMVar state
+  let e = events st
+  sock <- initSocket
+  forever $ do
+    st <- takeMVar state
+    (t, addr) <- recvFrom sock 14
+    if ((BS.length t) == 14) then (do
+      let msg@(HeartBeat tm mac) = decode (BSL.fromStrict t)
+      writeChan e $ RecvHeartBeat msg
+      case (mac `M.lookup` (ableToSentTo st)) of
+        Nothing -> do
+          lock <- newMVar ()
+          forkIO $ accesser lock
+          o' <- dupChan (outgoingMessages st)
+          forkIO $ chatSender addr lock o'
+          putMVar state $ st { ableToSentTo = M.insert mac lock (ableToSentTo st)}
+        Just lock ->
+          putMVar state st
+      ) else
+        putMVar state st
+
 
