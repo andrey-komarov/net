@@ -21,7 +21,6 @@ port = 1236
 chatSender :: BS.ByteString -> MVar ChatState -> IO ()
 chatSender msg state = do
   s <- takeMVar state
-
   putMVar state undefined
 {- where
     handle :: SomeException -> IO ()

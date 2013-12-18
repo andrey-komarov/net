@@ -2,7 +2,7 @@ module UDPReceiver (
     broadcastReceiver
 ) where
 
-import HeartBeatProtocol
+import Data
 
 import Network.Socket hiding (recvFrom)
 import Network.Socket.ByteString
@@ -12,6 +12,8 @@ import Control.Monad
 import Control.Applicative ((<$>))
 import Data.Binary
 import Control.Concurrent
+
+type Time = Word64
 
 port = 1235
 
@@ -24,10 +26,11 @@ initSocket = do
     bind sock (addrAddress addr)
     return sock
 
-broadcastReceiver :: ((HeartBeat, SockAddr) -> IO ()) -> IO ()
-broadcastReceiver callback = do
+broadcastReceiver :: Chan Event -> IO ()
+broadcastReceiver e = do
     sock <- initSocket
     forever $ do
         (t, addr) <- recvFrom sock 14
-        when (BS.length t == 14) $ 
-            (forkIO $ callback (decode (BSL.fromStrict t), addr)) >> return ()
+        when (BS.length t == 14) $ do
+          writeChan e $ RecvHeartBeat $ decode (BSL.fromStrict t)
+

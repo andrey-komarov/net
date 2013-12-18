@@ -2,7 +2,7 @@ module TCPReceiver (
     chatReceiver
 ) where
 
-import ChatMessageProtocol
+import Data
 
 import Control.Monad
 
@@ -29,19 +29,19 @@ initSocket = do
     listen sock 10
     return sock
 
-chatReceiver :: ((ChatMessage, SockAddr) -> IO ()) -> IO ()
-chatReceiver callback = do
+chatReceiver :: Chan Event -> IO ()
+chatReceiver e = do
     sock <- initSocket
     forever $ do
         (do
-            print "accepting"
+--            print "accepting"
             (s, addr) <- accept sock
-            print "accepted, transforming to handle"
+--            print "accepted, transforming to handle"
             h <- socketToHandle s ReadMode
-            print "transformtd, parsing data"
+--            print "transformtd, parsing data"
             t <- BSL.hGetContents h
-            print "closed"
-            forkIO ((callback (decode t, addr))  )>> return() ) `catch` handler
- where 
-    handler :: SomeException -> IO ()
-    handler e = undefined
+            print $ "received " ++ show (BSL.length t) ++ show t
+--            print "closed"
+            writeChan e $ RecvMessage $ decode t)
+--            forkIO ((callback (decode t, addr))  )>> return() ) `catch` handler
+

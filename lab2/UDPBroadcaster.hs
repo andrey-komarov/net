@@ -2,7 +2,7 @@ module UDPBroadcaster (
     broadcaster
 ) where
 
-import HeartBeatProtocol
+import Data
 
 import Control.Applicative ((<$>))
 import Control.Monad (forever)
@@ -12,9 +12,8 @@ import Network.Socket
 import Network.Socket.ByteString
 import qualified Data.ByteString.Lazy as BSL
 
-import Utils
 import System.Time
-timeout = 5000000
+timeout = 3000000
 port = 1235
 
 broadcastAddress = head <$> getAddrInfo Nothing (Just "255.255.255.255") (Just $ show port)
