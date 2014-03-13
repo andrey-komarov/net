@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 import Data
 
 import UDPReceiver
@@ -18,7 +19,7 @@ printer e = do
 reader :: Chan ChatMessage -> IO ()
 reader msgs = forever $ do
   s <- BSC8.getLine
-  msg <- newMessage s
+  msg <- newMessage ("komarov: " `BSC8.append` s)
   writeChan msgs msg
 
 main :: IO ()

@@ -20,6 +20,7 @@ import Data.List
 import Data.Bits
 
 import Control.Exception
+import Control.Monad
 
 import Text.Printf
 
@@ -28,7 +29,7 @@ import Control.Applicative
 
 import qualified Data.Map as M
 
-port = 4321
+port = 1234
 sendTimeout = 500000
 killTimeout = 15000000
 printTimeout = 1000000
@@ -84,7 +85,7 @@ instance Binary Msg where
         putByteString $ user `expandTo` usernameLength
         put time
         putByteString $ hostname `expandTo` hostnameLength
-    
+
     get = do
         host <- get 
         user <- unZero <$> getByteString usernameLength

@@ -33,6 +33,8 @@ chatSender :: SockAddr -> MVar () -> Chan ChatMessage -> IO ()
 chatSender sock lock messages = forever $ do
   () <- takeMVar lock
   msg <- readChan messages
-  let handler = (\e -> writeChan messages msg) :: IOException -> IO ()
-  sendMsg (setPort sock) msg `catch` handler
+  let handler cont  = (\e -> putStrLn "Send failed" >> cont) :: IOException -> IO ()
+--  let send = sendMsg (setPort sock) msg `catch` handler send
+--  send
+  sendMsg (setPort sock) msg `catch` handler (writeChan messages msg)
   

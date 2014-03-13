@@ -108,10 +108,10 @@ newEmptyChatState = do
 type Time = Word64
 
 ppTime :: Time -> String
-ppTime t = show (TOD (fromIntegral (t {- `div` 1000 -})) 0)
+ppTime t = show (TOD (fromIntegral (t `div` 1000)) 0)
 
 currentTimeMillis :: IO Word64
-currentTimeMillis = (\(TOD t _) -> fromIntegral t {- * 1000 -}) <$> getClockTime  
+currentTimeMillis = (\(TOD t _) -> fromIntegral t * 1000) <$> getClockTime  
 
 myMAC :: IO MAC
 myMAC = mac <$> fromJust <$> find (("wlp3s0" ==) . name) <$> getNetworkInterfaces
