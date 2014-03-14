@@ -6,15 +6,19 @@ import scala.pickling._
 import json._
 
 object Test2 {
+  case class A(a : Int, b : String) {
+
+  }
 
   def main(args: Array[String]) {
-//    val e = new Everything
-//    val s = e.toXML.toString()
-//    val xx = XML.loadString(s)
-//    print(xx)
     val pckl = List("1", "2", "3").pickle.value
     println(pckl)
-    val lst = pckl.unpickle[List[Int]]
+    val lst = pckl.unpickle[List[String]]
     println(lst)
+
+    val aaa = new A(1, "atata\"")
+    val p = aaa.pickle.value
+    println(p)
+    println(p.unpickle[A])
   }
 }
