@@ -2,7 +2,7 @@ package ru.ifmo.ctddev.komarov.net.lab3.main
 
 import java.io.File
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.{PrivateKey, ElGamal, Params}
-import ru.ifmo.ctddev.komarov.net.lab3.bytes.{BigIntToBytes, Hex}
+import ru.ifmo.ctddev.komarov.net.lab3.bytes.{BigIntToBytes, ToHex}
 import java.util
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256
 import java.nio.channels.Channels
