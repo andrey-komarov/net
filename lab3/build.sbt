@@ -1,4 +1,5 @@
-import AssemblyKeys._ // put this at the top of the file
+import sbtassembly.Plugin.AssemblyKeys
+import AssemblyKeys._
 
 assemblySettings
 

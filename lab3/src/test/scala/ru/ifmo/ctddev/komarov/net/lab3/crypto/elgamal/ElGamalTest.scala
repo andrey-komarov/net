@@ -1,3 +1,4 @@
+/*
 package ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal
 
 import org.scalacheck._
@@ -37,3 +38,5 @@ object ElGamalTest extends Properties("ElGamal") {
 //  }
 //
 }
+
+*/
