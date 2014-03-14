@@ -11,6 +11,7 @@ class BroadcastForever(timeout: Long, port: Int, msg: => Array[Byte]) extends Ru
     chan.socket().setBroadcast(true)
     val addr = new InetSocketAddress("255.255.255.255", 1234)
     while (true) {
+      println("sent")
       chan send (ByteBuffer.wrap(msg), addr)
       Thread sleep timeout
     }
