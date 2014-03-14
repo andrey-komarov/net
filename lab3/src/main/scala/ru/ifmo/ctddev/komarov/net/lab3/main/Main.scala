@@ -4,7 +4,6 @@ import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.{ElGamal, Params, Verifier
 import ru.ifmo.ctddev.komarov.net.lab3.network.udp.BroadcastForever
 
 import scala.concurrent._
-import scala.concurrent.ops._
 
 class Sender extends Runnable {
   override def run(): Unit = {
@@ -15,8 +14,8 @@ class Sender extends Runnable {
     chan.socket().setBroadcast(true)
     while (true) {
       val bb = ByteBuffer.wrap("Hello!".getBytes)
-      chan.send(bb, new InetSocketAddress("255.255.255.255", 1234));
-      Thread.sleep(1000);
+      chan.send(bb, new InetSocketAddress("255.255.255.255", 1234))
+      Thread.sleep(1000)
       print("!!")
     }
   }
