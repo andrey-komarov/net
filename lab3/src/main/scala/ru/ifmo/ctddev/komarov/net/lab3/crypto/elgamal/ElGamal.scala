@@ -3,7 +3,7 @@ package ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal
 import java.security.{MessageDigest, SecureRandom}
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256
 
-class ElGamal(params : Params, x : PrivateKey, y : PublicKey) {
+case class ElGamal(params : Params, x : PrivateKey, y : PublicKey) {
   import ElGamal._
   import params._
 
