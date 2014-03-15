@@ -1,21 +1,27 @@
 package ru.ifmo.ctddev.komarov.net.lab3.state
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.{Params, ElGamal, PublicKey}
-import java.io.{PrintWriter, FileReader, BufferedReader, File}
-import scala.pickling._
-import json._
-import java.nio.file.Files
-import java.nio.charset.StandardCharsets
-import java.nio.ByteBuffer
+import java.io._
+import scala.Serializable
+import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
+import scala.Some
 
-case class Everything(crypto: ElGamal) {
+case class Everything(crypto: ElGamal) extends Serializable {
   var revisions: Map[PublicKey, Set[Revision]] = Map.empty
 //  def revisionList: RevisionList
 
   def store() {
-    val f = new PrintWriter(Everything.FILENAME)
-    f print this.pickle
-    f.close()
+    try {
+      val fos = new FileOutputStream(Everything.FILENAME)
+      val baos = new ByteArrayOutputStream()
+      val oos = new ObjectOutputStream(baos)
+      oos.writeObject(this)
+      baos.writeTo(fos)
+      fos.close()
+      true
+    } catch {
+      case e : IOException => false
+    }
   }
 }
 
@@ -31,10 +37,10 @@ object Everything {
 
   def restore() : Option[Everything] = {
     try {
-      val f = new File(FILENAME)
-      val r = new BufferedReader(new FileReader(f))
-      val contents = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(Files.readAllBytes(f.toPath))).toString
-      Some(contents.unpickle[Everything])
+      val ois = new ObjectInputStream(new FileInputStream(FILENAME))
+      val obj = ois.readObject()
+      ois.close()
+      Some(obj.asInstanceOf[Everything])
     } catch {
       case e : Exception => {
         println(e)

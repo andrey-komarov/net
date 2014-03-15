@@ -1,6 +1,6 @@
 package ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal
 
-sealed case class Params (g : BigInt, p : BigInt)
+case class Params (g : BigInt, p : BigInt) extends Serializable
 
 object Params {
   val default = Params(
