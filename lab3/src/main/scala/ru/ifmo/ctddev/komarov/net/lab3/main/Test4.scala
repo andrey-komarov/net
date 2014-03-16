@@ -1,6 +1,6 @@
 package ru.ifmo.ctddev.komarov.net.lab3.main
 
-import ru.ifmo.ctddev.komarov.net.lab3.state.{Revision, BroadcastMessage, Everything}
+import ru.ifmo.ctddev.komarov.net.lab3.state.{RevisionList, Revision, BroadcastMessage, Everything}
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
 import ru.ifmo.ctddev.komarov.net.lab3.network.udp.{BroadcastReceiver, BroadcastForever}
@@ -21,9 +21,12 @@ object Test4 {
 //    new Thread(
 //      new BroadcastReceiver(1234, x => BroadcastMessage.fromBytes(x))
 //    ).start()
-
-    println(e.nextBroadcastMessage)
-    println(FileStorage(SHA256(Array.empty)))
-    println(FileStorage(SHA256(Array.fill[Byte](10)(10))))
+    val rl = e.revisionList
+    println(rl.getBytesWithoutLength.length)
+//    println(aa.length)
+    println(RevisionList(rl.getBytes))
+//    println(e.nextBroadcastMessage)
+//    println(FileStorage(SHA256(Array.empty)))
+//    println(FileStorage(SHA256(Array.fill[Byte](10)(10))))
   }
 }

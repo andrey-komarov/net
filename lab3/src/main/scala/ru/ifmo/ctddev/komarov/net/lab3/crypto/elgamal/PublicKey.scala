@@ -11,7 +11,7 @@ sealed case class PublicKey(n: BigInt) extends Serializable {
 object PublicKey {
   val byteLength = 128
 
-  def fromBytes(arr: Array[Byte]) : Option[PublicKey] = {
+  def apply(arr: Array[Byte]) : Option[PublicKey] = {
     if (arr.length != byteLength) {
       None
     } else {

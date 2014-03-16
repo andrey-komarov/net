@@ -16,7 +16,7 @@ object BroadcastMessage {
       None
     } else {
       for (
-        k <- PublicKey.fromBytes(arr.slice(0, revListStart));
+        k <- PublicKey(arr.slice(0, revListStart));
         h <- Some(SHA256Hash(arr.slice(revListStart, end)))
       ) yield BroadcastMessage(k, h)
     }

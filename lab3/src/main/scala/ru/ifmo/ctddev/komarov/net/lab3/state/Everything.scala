@@ -16,7 +16,7 @@ case class Everything(crypto: ElGamal) extends Serializable {
     RevisionList(ss.toList)
   }
 
-  def nextBroadcastMessage = BroadcastMessage(crypto.pubKey, revisionList.hash())
+  def nextBroadcastMessage = BroadcastMessage(crypto.pubKey, revisionList.hash)
 
   def store() : Boolean = {
     try {
