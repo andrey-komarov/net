@@ -6,6 +6,7 @@ import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
 import ru.ifmo.ctddev.komarov.net.lab3.network.udp.{BroadcastReceiver, BroadcastForever}
 import ru.ifmo.ctddev.komarov.net.lab3.state.files.FileStorage
 import java.io.ByteArrayOutputStream
+import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256
 
 object Test4 {
   def main(args: Array[String]) {
@@ -21,6 +22,8 @@ object Test4 {
 //      new BroadcastReceiver(1234, x => BroadcastMessage.fromBytes(x))
 //    ).start()
 
-    print(e.nextBroadcastMessage)
+    println(e.nextBroadcastMessage)
+    println(FileStorage(SHA256(Array.empty)))
+    println(FileStorage(SHA256(Array.fill[Byte](10)(10))))
   }
 }
