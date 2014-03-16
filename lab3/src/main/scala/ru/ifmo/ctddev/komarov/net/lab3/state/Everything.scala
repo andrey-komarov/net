@@ -8,9 +8,13 @@ import scala.Some
 
 case class Everything(crypto: ElGamal) extends Serializable {
   var revisions: Map[PublicKey, Set[Revision]] = Map.empty
-//  def revisionList: RevisionList
+  def revisionList: RevisionList = {
+    RevisionList(List.empty)
+  }
 
-  def store() {
+  def nextBroadcastMessage = BroadcastMessage(crypto.pubKey, revisionList.hash())
+
+  def store() : Boolean = {
     try {
       val fos = new FileOutputStream(Everything.FILENAME)
       val baos = new ByteArrayOutputStream()
@@ -26,7 +30,7 @@ case class Everything(crypto: ElGamal) extends Serializable {
 }
 
 object Everything {
-  val FILENAME = "state.json"
+  val FILENAME = "state.obj"
 
   def init : Everything = restore getOrElse newInstance
 
@@ -42,10 +46,9 @@ object Everything {
       ois.close()
       Some(obj.asInstanceOf[Everything])
     } catch {
-      case e : Exception => {
+      case e : Exception =>
         println(e)
         None
-      }
     }
   }
 }

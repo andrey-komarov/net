@@ -8,7 +8,7 @@ import java.lang.Thread
 class BroadcastForever(timeout: Long, port: Int, msg: => Array[Byte]) extends Runnable {
   def run(): Unit = {
     val chan = DatagramChannel.open()
-    chan.socket().setBroadcast(true)
+    chan.socket.setBroadcast(true)
     val addr = new InetSocketAddress("255.255.255.255", 1234)
     while (true) {
       println("sent")

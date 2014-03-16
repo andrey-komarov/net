@@ -7,3 +7,15 @@ sealed case class PublicKey(n: BigInt) extends Serializable {
 
   override def toString = ToHex(getBytes)
 }
+
+object PublicKey {
+  val byteLength = 128
+
+  def fromBytes(arr: Array[Byte]) : Option[PublicKey] = {
+    if (arr.length != byteLength) {
+      None
+    } else {
+      Some(PublicKey(BigInt.apply(Array.fill[Byte](1)(0) ++ arr)))
+    }
+  }
+}
