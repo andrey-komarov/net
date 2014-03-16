@@ -7,7 +7,7 @@ import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
 import scala.Some
 
 case class Everything(crypto: ElGamal) extends Serializable {
-  var revisions: Map[PublicKey, Set[Revision]] = Map.empty
+  var revisions: Map[PublicKey, Set[RevisionFiles]] = Map.empty
 
   def revisionList: RevisionList = {
     val ss = for (

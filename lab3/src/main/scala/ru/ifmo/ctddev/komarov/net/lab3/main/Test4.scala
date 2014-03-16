@@ -1,6 +1,6 @@
 package ru.ifmo.ctddev.komarov.net.lab3.main
 
-import ru.ifmo.ctddev.komarov.net.lab3.state.{RevisionList, Revision, BroadcastMessage, Everything}
+import ru.ifmo.ctddev.komarov.net.lab3.state.{RevisionList, RevisionFiles, BroadcastMessage, Everything}
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
 import ru.ifmo.ctddev.komarov.net.lab3.network.udp.{BroadcastReceiver, BroadcastForever}
@@ -11,7 +11,7 @@ import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256
 object Test4 {
   def main(args: Array[String]) {
     val e = Everything.init
-    e.revisions = e.revisions.+((e.crypto.pubKey, Set(Revision(e.crypto.pubKey, 0, List.empty))))
+    e.revisions = e.revisions.+((e.crypto.pubKey, Set(RevisionFiles(e.crypto.pubKey, 0, List.empty))))
 
     val baos = new ByteArrayOutputStream()
     baos.write(1)
@@ -25,6 +25,7 @@ object Test4 {
     println(rl.getBytesWithoutLength.length)
 //    println(aa.length)
     println(RevisionList(rl.getBytes))
+    println(e.crypto.pubKey)
 //    println(e.nextBroadcastMessage)
 //    println(FileStorage(SHA256(Array.empty)))
 //    println(FileStorage(SHA256(Array.fill[Byte](10)(10))))
