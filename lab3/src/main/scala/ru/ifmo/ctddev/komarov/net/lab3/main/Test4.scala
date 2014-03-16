@@ -4,7 +4,7 @@ import ru.ifmo.ctddev.komarov.net.lab3.state.{Revision, BroadcastMessage, Everyt
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
 import ru.ifmo.ctddev.komarov.net.lab3.network.udp.{BroadcastReceiver, BroadcastForever}
-import ru.ifmo.ctddev.komarov.net.lab3.state.files.FileStorage
+import ru.ifmo.ctddev.komarov.net.lab3.files.FileStorage
 import java.io.ByteArrayOutputStream
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256
 

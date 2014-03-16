@@ -1,4 +1,4 @@
-package ru.ifmo.ctddev.komarov.net.lab3.state.files
+package ru.ifmo.ctddev.komarov.net.lab3.files
 
 import java.io.{IOException, FileOutputStream, ByteArrayOutputStream, File}
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.{SHA256Hash, SHA256}
