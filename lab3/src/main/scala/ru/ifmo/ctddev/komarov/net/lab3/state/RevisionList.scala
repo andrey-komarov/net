@@ -3,7 +3,7 @@ package ru.ifmo.ctddev.komarov.net.lab3.state
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
 import com.sun.xml.internal.ws.util.ByteArrayBuffer
 import java.io.ByteArrayOutputStream
-import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256
+import ru.ifmo.ctddev.komarov.net.lab3.crypto.{SHA256Hash, SHA256}
 
 case class RevisionList(revisions: List[(PublicKey, Int)]) {
   def hash() : SHA256Hash = {
@@ -12,6 +12,6 @@ case class RevisionList(revisions: List[(PublicKey, Int)]) {
       baos.write(p._1.getBytes)
       baos.write(p._2)
     })
-    SHA256Hash(SHA256(baos.toByteArray))
+    SHA256(baos.toByteArray)
   }
 }

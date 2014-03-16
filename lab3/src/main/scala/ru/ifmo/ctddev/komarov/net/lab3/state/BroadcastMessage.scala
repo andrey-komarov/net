@@ -1,9 +1,10 @@
 package ru.ifmo.ctddev.komarov.net.lab3.state
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
+import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256Hash
 
 case class BroadcastMessage(x: PublicKey, revList: SHA256Hash) {
-  def getBytes : Array[Byte] = x.getBytes ++ revList.hash
+  def getBytes : Array[Byte] = x.getBytes ++ revList.bytes
 }
 
 object BroadcastMessage {

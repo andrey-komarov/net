@@ -15,7 +15,7 @@ class ElGamal(params : Params, x : PrivateKey, y : PublicKey) extends Serializab
       val k = randFromTo(1, p - 1)
       if ((k gcd (p - 1)) == BigInt(1)) {
         val r = g.modPow(k, p)
-        val s = ((BigInt(SHA256(data)) - x.n * r) * k.modInverse(p - 1)) mod (p - 1)
+        val s = ((BigInt(SHA256(data).bytes) - x.n * r) * k.modInverse(p - 1)) mod (p - 1)
         if (s != BigInt(0)) {
           return Signature(r, s)
         }

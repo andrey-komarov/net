@@ -8,8 +8,12 @@ import scala.Some
 
 case class Everything(crypto: ElGamal) extends Serializable {
   var revisions: Map[PublicKey, Set[Revision]] = Map.empty
+
   def revisionList: RevisionList = {
-    RevisionList(List.empty)
+    val ss = for (
+      (k, s) <- revisions
+    ) yield (k, s.map(_.version).max)
+    RevisionList(ss.toList)
   }
 
   def nextBroadcastMessage = BroadcastMessage(crypto.pubKey, revisionList.hash())
