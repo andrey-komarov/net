@@ -3,10 +3,19 @@ package ru.ifmo.ctddev.komarov.net.lab3.state
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.Signature
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256Hash
 import java.nio.ByteBuffer
+import java.io.ByteArrayOutputStream
+import ru.ifmo.ctddev.komarov.net.lab3.bytes.Bytes
 
 case class RevisionFiles(sig: Signature, version: Int, fileHashes: List[SHA256Hash]) {
   def getBytes: Array[Byte] = {
-    ???
+    val baos = new ByteArrayOutputStream
+    baos write sig.getBytes
+    baos write Bytes(version)
+    baos write fileHashes.size
+    fileHashes sortBy (_.toString) foreach {
+      baos write _.bytes
+    }
+    baos.toByteArray
   }
 }
 
