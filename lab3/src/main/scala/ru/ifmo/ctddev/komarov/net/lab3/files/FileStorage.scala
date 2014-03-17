@@ -2,7 +2,6 @@ package ru.ifmo.ctddev.komarov.net.lab3.files
 
 import java.io.{IOException, FileOutputStream, ByteArrayOutputStream, File}
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.{SHA256Hash, SHA256}
-import ru.ifmo.ctddev.komarov.net.lab3.bytes.ToHex
 import java.nio.file.Files
 
 object FileStorage {

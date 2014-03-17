@@ -1,6 +1,6 @@
 package ru.ifmo.ctddev.komarov.net.lab3.crypto
 
-import ru.ifmo.ctddev.komarov.net.lab3.bytes.ToHex
+import ru.ifmo.ctddev.komarov.net.lab3.bytes.Hex
 import java.util
 
 case class SHA256Hash(bytes: Array[Byte]) extends Serializable {
@@ -11,7 +11,7 @@ case class SHA256Hash(bytes: Array[Byte]) extends Serializable {
     case _ => false
   }
 
-  override def toString = ToHex(bytes)
+  override def toString = Hex(bytes)
 }
 
 case object SHA256Hash {
