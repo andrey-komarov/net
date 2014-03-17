@@ -1,8 +1,8 @@
 package ru.ifmo.ctddev.komarov.net.lab3.state
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
-import java.io.ByteArrayOutputStream
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.{SHA256Hash, SHA256}
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 case class RevisionList(revisions: List[(PublicKey, Int)]) {

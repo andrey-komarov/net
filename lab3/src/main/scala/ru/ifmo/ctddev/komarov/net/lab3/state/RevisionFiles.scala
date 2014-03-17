@@ -1,8 +1,8 @@
 package ru.ifmo.ctddev.komarov.net.lab3.state
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.Signature
-import java.nio.ByteBuffer
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256Hash
+import java.nio.ByteBuffer
 
 case class RevisionFiles(sig: Signature, version: Int, fileHashes: List[SHA256Hash]) {
   def getBytes: Array[Byte] = {

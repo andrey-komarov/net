@@ -1,11 +1,10 @@
 package ru.ifmo.ctddev.komarov.net.lab3.state
 
-import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.{Params, ElGamal}
+import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal._
+import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256Hash
 import java.io._
 import scala.Serializable
-import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
 import scala.Some
-import ru.ifmo.ctddev.komarov.net.lab3.crypto.SHA256Hash
 
 case class Everything(crypto: ElGamal) extends Serializable {
   var revisions: Map[PublicKey, Set[RevisionFiles]] = Map.empty
