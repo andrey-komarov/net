@@ -1,7 +1,6 @@
 package ru.ifmo.ctddev.komarov.net.lab3.state
 
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.elgamal.PublicKey
-import com.sun.xml.internal.ws.util.ByteArrayBuffer
 import java.io.ByteArrayOutputStream
 import ru.ifmo.ctddev.komarov.net.lab3.crypto.{SHA256Hash, SHA256}
 import java.nio.ByteBuffer
@@ -28,10 +27,10 @@ object RevisionList {
       return None
     val bb = ByteBuffer.wrap(bytes)
     val len = bb.getInt
-    if (len * (PublicKey.byteLength + 4) + 4 != bytes.length)
+    if (len * (PublicKey.BYTE_LENGTH + 4) + 4 != bytes.length)
       return None
     val sss = for (i <- 1 to len) yield {
-      val key = Array.fill[Byte](PublicKey.byteLength)(bb.get)
+      val key = Array.fill[Byte](PublicKey.BYTE_LENGTH)(bb.get)
       val n = bb.getInt
       (PublicKey(key).get, n)
     }

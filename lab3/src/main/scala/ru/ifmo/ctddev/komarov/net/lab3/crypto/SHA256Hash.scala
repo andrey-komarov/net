@@ -1,13 +1,13 @@
 package ru.ifmo.ctddev.komarov.net.lab3.crypto
 
 import ru.ifmo.ctddev.komarov.net.lab3.bytes.ToHex
-import java.util.Arrays
+import java.util
 
 case class SHA256Hash(bytes: Array[Byte]) extends Serializable {
-  assert(bytes.length == SHA256Hash.byteLength, "Found: " + bytes.length)
+  assert(bytes.length == SHA256Hash.BYTE_LENGTH, "Found: " + bytes.length)
 
   override def equals(obj: scala.Any): Boolean = obj match {
-    case SHA256Hash(b) => Arrays.equals(b, bytes)
+    case SHA256Hash(b) => util.Arrays.equals(b, bytes)
     case _ => false
   }
 
@@ -15,5 +15,5 @@ case class SHA256Hash(bytes: Array[Byte]) extends Serializable {
 }
 
 case object SHA256Hash {
-  val byteLength = 32
+  val BYTE_LENGTH = 32
 }
