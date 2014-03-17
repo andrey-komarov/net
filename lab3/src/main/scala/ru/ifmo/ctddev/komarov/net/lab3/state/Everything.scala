@@ -20,6 +20,10 @@ case class Everything(crypto: ElGamal) extends Serializable {
 
   def nextBroadcastMessage = BroadcastMessage(crypto.pubKey, revisionList.hash)
 
+  def update(msg: BroadcastMessage) {
+
+  }
+
   def store() : Boolean = {
     try {
       val fos = new FileOutputStream(Everything.FILENAME)

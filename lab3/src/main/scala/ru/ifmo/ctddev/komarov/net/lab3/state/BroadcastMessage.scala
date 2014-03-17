@@ -11,7 +11,7 @@ object BroadcastMessage {
   private val revListStart = PublicKey.BYTE_LENGTH
   private val end = revListStart + SHA256Hash.BYTE_LENGTH
 
-  def fromBytes(arr: Array[Byte]): Option[BroadcastMessage] = {
+  def apply(arr: Array[Byte]): Option[BroadcastMessage] = {
     if (arr.length != PublicKey.BYTE_LENGTH) {
       None
     } else {
