@@ -4,6 +4,7 @@ import akka.actor._
 import akka.io.{Udp, IO}
 import akka.util.ByteString
 import java.net.InetSocketAddress
+import akka.io.Udp.SO.Broadcast
 
 
 object UDPActors {
@@ -12,17 +13,16 @@ object UDPActors {
 
     import context.system
 
-    IO(Udp) ! Udp.SimpleSender
+    IO(Udp) ! Udp.SimpleSender(List(Broadcast(on = true)))
 
     def receive = {
       case Udp.SimpleSenderReady =>
-        context.become(ready(sender))
-      //      case e => println(e)
+        context.become(ready(sender()))
     }
 
     def ready(socket: ActorRef): Receive = {
       case "go" =>
-        socket ! Udp.Send(ByteString("12341234"), new InetSocketAddress("127.0.0.1", 1234))
+        socket ! Udp.Send(ByteString("12341234"), new InetSocketAddress("255.255.255.255", 1234))
       case Udp.Unbind => socket ! Udp.Unbind
       case Udp.Unbound => context.stop(self)
     }
@@ -32,10 +32,11 @@ object UDPActors {
 
     import context.system
 
-    IO(Udp) ! Udp.Bind(self, new InetSocketAddress("localhost", 1234))
+    IO(Udp) ! Udp.Bind(self, new InetSocketAddress(1234), List(Broadcast(on = true)))
 
     def receive = {
       case Udp.Bound(local) =>
+        println("Bound " + local)
         context.become(ready(sender()))
       case e => println(e + " " + "!!!!!")
     }
@@ -43,9 +44,6 @@ object UDPActors {
     def ready(socket: ActorRef): Receive = {
       case Udp.Received(data, remote) =>
         println(data + " " + "!!!!")
-      //        val processed = // parse data etc., e.g. using PipelineStage
-      //          socket ! Udp.Send(data, remote) // example server echoes back
-      //        nextActor ! processed
       case Udp.Unbind => socket ! Udp.Unbind
       case Udp.Unbound => context.stop(self)
     }
