@@ -1,17 +1,15 @@
 package ru.ifmo.ctddev.komarov.net.lab3.crypto
 
 import ru.ifmo.ctddev.komarov.net.lab3.bytes.Hex
-import java.util
+import ru.ifmo.ctddev.komarov.net.lab3.bytes.Byteable.ToBytes
+import akka.util.ByteString
 
-case class SHA256Hash(bytes: Array[Byte]) extends Serializable {
-  assert(bytes.length == SHA256Hash.BYTE_LENGTH, "Found: " + bytes.length)
+case class SHA256Hash(getBytes: ByteString) extends ToBytes with Serializable {
+  assert(getBytes.length == SHA256Hash.BYTE_LENGTH, "Found: " + getBytes.length)
 
-  override def equals(obj: scala.Any): Boolean = obj match {
-    case SHA256Hash(b) => util.Arrays.equals(b, bytes)
-    case _ => false
-  }
+  override def toString = Hex(getBytes)
 
-  override def toString = Hex(bytes)
+  //  override def getBytes
 }
 
 case object SHA256Hash {

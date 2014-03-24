@@ -6,7 +6,6 @@ import akka.util.ByteString
 import java.net.InetSocketAddress
 import akka.io.Udp.SO.Broadcast
 
-
 object UDPActors {
 
   class Sender() extends Actor {
@@ -81,6 +80,8 @@ object UDPActors {
     system.scheduler.schedule(0 seconds, 1 second) {
       sender ! "go"
     }
+
+    val bs = ByteString("asdDSF")
     //    client ! ByteString("asfasd")
   }
 }

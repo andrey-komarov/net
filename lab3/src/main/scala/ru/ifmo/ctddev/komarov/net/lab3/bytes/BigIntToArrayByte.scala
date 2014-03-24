@@ -1,7 +1,9 @@
 package ru.ifmo.ctddev.komarov.net.lab3.bytes
 
-object BigIntToBytes {
-  def apply(width : Int)(n : BigInt) : Array[Byte] = {
+import akka.util.ByteString
+
+object BigIntToArrayByte {
+  def apply(width: Int)(n: BigInt): ByteString = {
     assert(n.bitLength <= width * 8)
     val ba = n.toByteArray
     val res = Array.fill[Byte](width - ba.length)(0) ++ ba

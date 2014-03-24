@@ -13,7 +13,7 @@ case class RevisionFiles(sig: Signature, version: Int, fileHashes: List[SHA256Ha
     baos write Bytes(version)
     baos write fileHashes.size
     fileHashes sortBy (_.toString) foreach {
-      baos write _.bytes
+      baos write _.getBytes
     }
     baos.toByteArray
   }

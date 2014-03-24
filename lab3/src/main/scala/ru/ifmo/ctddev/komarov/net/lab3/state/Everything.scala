@@ -18,13 +18,13 @@ case class Everything(crypto: ElGamal) extends Serializable {
     RevisionList(ss.toList)
   }
 
-  def nextBroadcastMessage = BroadcastMessage(crypto.pubKey, revisionList.hash)
+  def nextBroadcastMessage = HeartbeatMessage(crypto.pubKey, revisionList.hash)
 
-  def update(msg: BroadcastMessage) {
+  def update(msg: HeartbeatMessage) {
 
   }
 
-  def store() : Boolean = {
+  def store(): Boolean = {
     try {
       val fos = new FileOutputStream(Everything.FILENAME)
       val baos = new ByteArrayOutputStream()
@@ -34,7 +34,7 @@ case class Everything(crypto: ElGamal) extends Serializable {
       fos.close()
       true
     } catch {
-      case e : IOException => false
+      case e: IOException => false
     }
   }
 }
@@ -42,21 +42,21 @@ case class Everything(crypto: ElGamal) extends Serializable {
 object Everything {
   val FILENAME = "state.obj"
 
-  def init : Everything = restore getOrElse newInstance
+  def init: Everything = restore getOrElse newInstance
 
-  def newInstance : Everything = {
+  def newInstance: Everything = {
     val eg = ElGamal(Params.default)
     new Everything(eg)
   }
 
-  def restore() : Option[Everything] = {
+  def restore(): Option[Everything] = {
     try {
       val ois = new ObjectInputStream(new FileInputStream(FILENAME))
       val obj = ois.readObject()
       ois.close()
       Some(obj.asInstanceOf[Everything])
     } catch {
-      case e : Exception =>
+      case e: Exception =>
         println(e)
         None
     }
