@@ -20,7 +20,7 @@ class HeartbeatReceiver(port: Int, back: ActorRef) extends Actor {
 
   def ready(socket: ActorRef): Receive = {
     case Udp.Received(data, remote) =>
-      fromBytes[HeartbeatMessage](data).foreach(back ! _)
+      fromBytes[HeartbeatMessage](data).foreach(m => back !(m, remote))
     case Udp.Unbind => socket ! Udp.Unbind
     case Udp.Unbound => context.stop(self)
   }
