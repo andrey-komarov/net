@@ -15,7 +15,7 @@ object HeartbeatMessage {
     override def fromByteString(bs: ByteString): Option[HeartbeatMessage] =
       for {
       // :(
-        true <- Some(if (bs.length == PublicKey.BYTE_LENGTH) +SHA256Hash.BYTE_LENGTH)
+        true <- Some(bs.length == PublicKey.BYTE_LENGTH + SHA256Hash.BYTE_LENGTH)
         k <- fromBytes[PublicKey](bs.take(PublicKey.BYTE_LENGTH))
         h <- fromBytes[SHA256Hash](bs.takeRight(SHA256Hash.BYTE_LENGTH))
       } yield HeartbeatMessage(k, h)

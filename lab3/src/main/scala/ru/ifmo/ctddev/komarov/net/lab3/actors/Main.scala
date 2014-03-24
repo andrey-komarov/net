@@ -27,15 +27,15 @@ class Main(crypto: ElGamal) extends Actor {
     RevisionList(ss.toList)
   }
 
-  def nextBroadcastMessage = HeartbeatMessage(crypto.pubKey, revisionList.hash)
+  def nextBroadcastMessage = HeartbeatMessage(crypto.pubKey, revisionList.hash).getBytes
 
   val broadcaster = actorOf(Props(new Broadcaster(3012)))
   val udpReceiver = actorOf(Props(new HeartbeatReceiver(3012, self)))
 
   override def receive = {
-    case Heartbeat => broadcaster ! nextBroadcastMessage
+    case Heartbeat =>
+      broadcaster ! nextBroadcastMessage
     case m@HeartbeatMessage(key, hash) =>
       println("Received " + m)
-      ???
   }
 }
