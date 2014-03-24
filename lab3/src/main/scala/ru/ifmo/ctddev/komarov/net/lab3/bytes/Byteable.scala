@@ -13,6 +13,10 @@ object Byteable {
     override def getBytes = ByteString(ByteBuffer.allocate(4).putInt(n).array)
   }
 
+  implicit def pair2ToBytes[A <% ToBytes, B <% ToBytes](ab: (A, B)) = new ToBytes {
+    override def getBytes = ab._1.getBytes ++ ab._1.getBytes
+  }
+
   trait FromBytes[T] {
     def fromByteString(bs: ByteString): Option[T]
   }
