@@ -4,9 +4,10 @@ import akka.actor.{ActorRef, Actor}
 import akka.io.{Udp, IO}
 import java.net.InetSocketAddress
 import akka.io.Udp.SO.Broadcast
+import ru.ifmo.ctddev.komarov.net.lab3.state.HeartbeatMessage
+import ru.ifmo.ctddev.komarov.net.lab3.bytes.Byteable._
 
-
-class BroadcastReceiver(port: Int, back: ActorRef) extends Actor {
+class HeartbeatReceiver(port: Int, back: ActorRef) extends Actor {
 
   import context.system
 
@@ -19,7 +20,7 @@ class BroadcastReceiver(port: Int, back: ActorRef) extends Actor {
 
   def ready(socket: ActorRef): Receive = {
     case Udp.Received(data, remote) =>
-      back ! data
+      fromBytes[HeartbeatMessage](data).foreach(back ! _)
     case Udp.Unbind => socket ! Udp.Unbind
     case Udp.Unbound => context.stop(self)
   }

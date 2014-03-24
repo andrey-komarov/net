@@ -12,7 +12,7 @@ sealed case class Verifier(params: Params, key: PublicKey) {
     if (!(0 < r && r < p) || !(0 < s && s < p - 1)) {
       return false
     }
-    val lhs = g modPow(BigInt(SHA256(data).getBytes), p)
+    val lhs = g modPow(BigInt(SHA256(data).getBytes.toArray[Byte]), p)
     val rhs = ((y modPow(r, p)) * (r modPow(s, p))) mod p
     lhs == rhs
   }

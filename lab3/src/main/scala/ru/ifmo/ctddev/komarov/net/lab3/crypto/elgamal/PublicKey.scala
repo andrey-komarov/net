@@ -5,18 +5,23 @@ import scala.Some
 import ru.ifmo.ctddev.komarov.net.lab3.bytes.{BigIntToArrayByte, BytesToBigInt, Hex}
 import akka.util.ByteString
 
-sealed case class PublicKey(n: BigInt) {
+sealed case class PublicKey(n: BigInt) extends ToBytes {
 
-  import PublicKey._
 
   override def toString = Hex(this.getBytes)
+
+  override def getBytes: ByteString = ByteString(BigIntToArrayByte(128)(n))
 }
 
 object PublicKey {
   val BYTE_LENGTH = 128
 
-  implicit def publicKey2ToBytes(key: PublicKey): ToBytes = new ToBytes {
-    override def getBytes = ByteString(BigIntToArrayByte(128)(key.n))
+  implicit object publicKey2FromBytes extends FromBytes[PublicKey] {
+    override def fromByteString(bs: ByteString): Option[PublicKey] =
+      if (bs.length != BYTE_LENGTH)
+        None
+      else
+        Some(PublicKey(BytesToBigInt(bs.toArray)))
   }
 
   def apply(arr: Array[Byte]): Option[PublicKey] = {
