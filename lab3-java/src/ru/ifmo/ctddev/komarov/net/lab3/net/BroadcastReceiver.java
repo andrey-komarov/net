@@ -1,10 +1,8 @@
 package ru.ifmo.ctddev.komarov.net.lab3.net;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
+import java.net.*;
+import java.util.Arrays;
 
 public abstract class BroadcastReceiver implements Runnable {
     private final int port;
@@ -16,23 +14,21 @@ public abstract class BroadcastReceiver implements Runnable {
     @Override
     public void run() {
         try {
-            DatagramChannel chan = DatagramChannel.open();
-            chan.socket().setBroadcast(true);
-            chan.socket().setReuseAddress(true);
-            chan.bind(new InetSocketAddress(port));
-            ByteBuffer bb = ByteBuffer.allocate(1 << 17);
+            DatagramSocket socket = new DatagramSocket(port);
+            socket.setBroadcast(true);
+            socket.setReuseAddress(true);
+            byte[] buf = new byte[1 << 17];
+            DatagramPacket dp = new DatagramPacket(buf, buf.length);
             while (true) {
-                SocketAddress addr = chan.receive(bb);
-                bb.flip();
-                byte[] bytes = new byte[bb.remaining()];
-                bb.get(bytes);
-                bb.clear();
-                receive(addr, bytes);
+                socket.receive(dp);
+
+                InetAddress addr = dp.getAddress();
+                receive(addr, Arrays.copyOf(dp.getData(), dp.getLength()));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public abstract void receive(SocketAddress addr, byte[] message);
+    public abstract void receive(InetAddress addr, byte[] message);
 }

@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import java.util.Optional;
 
 public class BroadcastMessage implements Storable {
-    private final PublicKey key;
-    private final SHA256Hash hash;
+    public final PublicKey key;
+    public final SHA256Hash hash;
 
     public BroadcastMessage(PublicKey key, SHA256Hash hash) {
         this.key = key;

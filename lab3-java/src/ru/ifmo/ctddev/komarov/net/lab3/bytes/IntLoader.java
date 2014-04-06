@@ -7,15 +7,16 @@ import java.util.Optional;
 
 public class IntLoader {
     public static Optional<Integer> loadFrom(InputStream is) {
+        byte[] ba = new byte[4];
         ByteBuffer bb = ByteBuffer.allocate(4);
         for (int i = 0; i < 4; i++) {
             try {
                 int r = is.read();
-                bb.put((byte) r);
+                ba[i] = (byte) r;
             } catch (IOException e) {
                 return Optional.empty();
             }
         }
-        return Optional.of(bb.getInt());
+        return Optional.of(ByteBuffer.wrap(ba).getInt());
     }
 }
