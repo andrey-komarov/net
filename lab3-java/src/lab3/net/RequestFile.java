@@ -79,8 +79,13 @@ public class RequestFile implements Runnable {
                     byte[] buf = new byte[Math.min(contentLen, 1 << 12)];
 
                     int rr;
+                    int need = contentLen;
                     while ((rr = is.read(buf)) != -1) {
                         fos.write(buf, 0, rr);
+                        need -= r;
+                        if (need == 0) {
+                            break;
+                        }
                     }
 
                     fos.close();
