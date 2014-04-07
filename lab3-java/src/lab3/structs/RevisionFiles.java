@@ -3,8 +3,7 @@ package lab3.structs;
 import lab3.bytes.IntLoader;
 import lab3.bytes.Storable;
 import lab3.crypto.SHA256Hash;
-import lab3.crypto.elgamal.Signature;
-import lab3.crypto.elgamal.Signer;
+import lab3.crypto.elgamal.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -52,6 +51,15 @@ public class RevisionFiles implements Storable {
             }
         }
         return true;
+    }
+
+    public boolean verify(Params p, PublicKey key) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Storable.storeInt(version, baos);
+        Storable.storeInt(files.size(), baos);
+        files.forEach(f -> f.store(baos));
+        Verifier v = new Verifier(p);
+        return v.verify(signature, key, baos.toByteArray());
     }
 
     public static Optional<RevisionFiles> loadFrom(InputStream is) {

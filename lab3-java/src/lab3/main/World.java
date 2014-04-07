@@ -1,6 +1,5 @@
 package lab3.main;
 
-import lab3.crypto.SHA256;
 import lab3.crypto.SHA256Hash;
 import lab3.crypto.elgamal.KeyPair;
 import lab3.crypto.elgamal.Params;
@@ -10,8 +9,6 @@ import lab3.net.RequestRevisionList;
 import lab3.structs.*;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -72,7 +69,6 @@ public class World {
     }
 
     public synchronized void acceptRevisionList(RevisionList list, InetAddress source) {
-        System.out.println("new rev list! " + list);
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
         new Thread(new DownloadMissedRevisionFiles(list, addr, this)).start();
     }
@@ -89,7 +85,9 @@ public class World {
     }
 
     public synchronized void acceptRevisionFiles(PublicKey key, RevisionFiles files, InetAddress source) {
-        System.err.println("acceptRevisionFiles from " + source);
+        if (!files.verify(myKeys.params, key)) {
+            return;
+        }
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
         new Thread(new DownloadMissedFiles(key, files, addr, this)).start();
     }

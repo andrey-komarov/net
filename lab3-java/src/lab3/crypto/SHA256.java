@@ -20,7 +20,6 @@ public class SHA256 {
         SHA256.reset();
         int r;
         while ((r = is.read(buf)) != -1) {
-            System.err.println(r);
             SHA256.update(buf, 0, r);
         }
         return new SHA256Hash(SHA256.digest());

@@ -21,7 +21,6 @@ public abstract class BroadcastReceiver implements Runnable {
             DatagramPacket dp = new DatagramPacket(buf, buf.length);
             while (true) {
                 socket.receive(dp);
-                System.err.println("Received " + dp.getLength() + " from " + dp.getAddress());
                 InetAddress addr = dp.getAddress();
                 receive(addr, Arrays.copyOf(dp.getData(), dp.getLength()));
             }

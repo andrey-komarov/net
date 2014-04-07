@@ -21,7 +21,6 @@ public class RequestRevisionList implements Runnable {
     @Override
     public void run() {
         try {
-            System.err.println("Requesting RevisionList from " + addr);
             Socket socket = new Socket();
             socket.connect(addr);
             socket.getOutputStream().write(ProtocolConfig.GET_REVISION_LIST);

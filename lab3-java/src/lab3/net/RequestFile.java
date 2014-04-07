@@ -86,7 +86,7 @@ public class RequestFile implements Runnable {
                         File dir = new File(String.format("./files/%s", key.toShortString()));
                         dir.mkdir();
                         File saveTo = new File(String.format("./files/%s/%s", key.toShortString(), name));
-                        System.err.println("Moving " + tmp + " to " + saveTo);
+                        System.out.println("New file: " + saveTo);
                         Files.move(tmp.toPath(), saveTo.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         world.accept(new FileInfo(tmpHash, name, key, saveTo));
                     }

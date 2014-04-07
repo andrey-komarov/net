@@ -26,7 +26,6 @@ public class RequestRevisionFiles implements Runnable {
     @Override
     public void run() {
         try {
-            System.err.println("Requesting RevisionFiles from " + addr);
             Socket socket = new Socket();
             socket.connect(addr);
             OutputStream os = socket.getOutputStream();
