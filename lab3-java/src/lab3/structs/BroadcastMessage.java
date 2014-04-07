@@ -31,4 +31,9 @@ public class BroadcastMessage implements Storable {
     public static int byteLength() {
         return PublicKey.byteLength() + SHA256Hash.byteLength();
     }
+
+    @Override
+    public String toString() {
+        return key.toShortString() + " : " + hash;
+    }
 }

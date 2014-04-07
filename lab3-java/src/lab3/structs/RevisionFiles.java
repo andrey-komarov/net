@@ -97,4 +97,11 @@ public class RevisionFiles implements Storable {
     }
 
     public static final Comparator<RevisionFiles> BY_VERSION = (rf1, rf2) -> rf1.version - rf2.version;
+
+    @Override
+    public String toString() {
+        ArrayList<String> filenames = new ArrayList<>();
+        files.forEach(f -> filenames.add(f.toString()));
+        return "Files[" + version + " : " + filenames + "]";
+    }
 }

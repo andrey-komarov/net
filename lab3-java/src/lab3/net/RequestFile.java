@@ -29,10 +29,14 @@ public class RequestFile implements Runnable {
 
     @Override
     public void run() {
+        if (world.notCurrentlyDownloadingAndAdd(hash)) {
+            return;
+        }
         try {
             Socket socket = new Socket();
             socket.connect(addr);
             OutputStream os = socket.getOutputStream();
+            System.err.println("REQ FILE " + hash + " from " + addr);
             os.write(ProtocolConfig.GET_FILE);
             if (!hash.store(os)) {
                 return;
@@ -93,6 +97,8 @@ public class RequestFile implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            world.removeCurrentlyDownloading(hash);
         }
     }
 }

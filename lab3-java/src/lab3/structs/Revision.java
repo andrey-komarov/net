@@ -32,9 +32,6 @@ public class Revision implements Storable {
 
     @Override
     public String toString() {
-        return "Revision{" +
-                "key=" + key +
-                ", version=" + version +
-                '}';
+        return "Revision[" + key.toShortString() + " : " + version + "]";
     }
 }

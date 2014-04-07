@@ -32,11 +32,14 @@ public class Router implements Runnable {
                 case -1:
                     return;
                 case ProtocolConfig.GET_REVISION_LIST:
+                    System.err.println("GET_REVISION_LIST request from " + socket.getRemoteSocketAddress());
                     world.getRevisionList().store(os);
                     socket.close();
                     return;
                 case ProtocolConfig.GET_REVISION_FILES:
                     Optional<PublicKey> oKey = PublicKey.loadFrom(is);
+                    System.err.println("GET_REVISION_FILES " + oKey.map(PublicKey::toShortString).orElse("<?>") +
+                            " request from " + socket.getRemoteSocketAddress());
                     Optional<RevisionFiles> oRevFiles = oKey.flatMap(world::getRevisionFiles);
                     if (oRevFiles.isPresent()) {
                         os.write(ProtocolConfig.OK);
@@ -48,11 +51,15 @@ public class Router implements Runnable {
                     return;
                 case ProtocolConfig.GET_FILE:
                     Optional<SHA256Hash> oHash = SHA256Hash.loadFrom(is);
+                    System.err.println("GET_FILE " + oHash.map(SHA256Hash::toString).orElse("<?>") +
+                            "request from " + socket.getRemoteSocketAddress());
                     Optional<FileInfo> oInfo = oHash.flatMap(world::getFileInfo);
                     if (oInfo.isPresent()) {
+                        System.err.println("... OK");
                         os.write(ProtocolConfig.OK);
                         oInfo.get().store(os);
                     } else {
+                        System.err.println("... DENIED");
                         os.write(ProtocolConfig.DENIED);
                     }
                     socket.close();

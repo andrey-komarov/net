@@ -29,6 +29,8 @@ public class DownloadMissedFiles implements Runnable {
             t.start();
         });
 
+        System.err.println("... " + threads.size() + " files missing");
+
         threads.forEach(t -> {
             try {
                 t.join();

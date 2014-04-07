@@ -20,6 +20,7 @@ public class World {
     private Set<SHA256Hash> knownRevisionListHashes;
     private Map<SHA256Hash, FileInfo> knownFiles;
     private MutableFileList myFiles;
+    private Set<SHA256Hash> currentlyDownloading;
 
     public World() {
         myKeys = new KeyPair(Params.DEFAULT);
@@ -27,6 +28,20 @@ public class World {
         knownRevisionListHashes = new HashSet<>();
         myFiles = new MutableFileList(myKeys);
         knownFiles = new HashMap<>();
+        currentlyDownloading = new HashSet<>();
+    }
+
+    public synchronized boolean notCurrentlyDownloadingAndAdd(SHA256Hash hash) {
+        if (currentlyDownloading.contains(hash)) {
+            return true;
+        } else {
+            currentlyDownloading.add(hash);
+            return false;
+        }
+    }
+
+    public synchronized void removeCurrentlyDownloading(SHA256Hash hash) {
+        currentlyDownloading.remove(hash);
     }
 
     public synchronized RevisionList getRevisionList() {
@@ -68,13 +83,16 @@ public class World {
     }
 
     public synchronized void acceptBroadcastMessage(BroadcastMessage msg, InetAddress source) {
+        System.err.println("HEARTBEAT " + msg + " from " + source);
         if (!knownRevisionListHashes.contains(msg.hash)) {
+            System.err.println("... unknown hash");
             InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
             new Thread(new RequestRevisionList(addr, this)).start();
         }
     }
 
     public synchronized void acceptRevisionList(RevisionList list, InetAddress source) {
+        System.err.println("RECEIVED REVISION_LIST " + list + " from " + source);
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
         new Thread(new DownloadMissedRevisionFiles(list, addr, this)).start();
     }
@@ -91,7 +109,9 @@ public class World {
     }
 
     public synchronized void acceptRevisionFiles(PublicKey key, RevisionFiles files, InetAddress source) {
+        System.err.println("RECEIVED REVISION_FILES " + key.toShortString() + " : " + files + " from " + source);
         if (!files.verify(myKeys.params, key)) {
+            System.err.println("... signature verification failed");
             return;
         }
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
@@ -99,6 +119,7 @@ public class World {
     }
 
     public synchronized void accept(FileInfo info) {
+        System.err.println("RECEIVED " + info.location);
         knownFiles.put(info.hash(), info);
     }
 

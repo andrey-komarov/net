@@ -23,6 +23,7 @@ public class RequestRevisionList implements Runnable {
         try {
             Socket socket = new Socket();
             socket.connect(addr);
+            System.err.println("REQ REVISION_LIST from " + addr);
             socket.getOutputStream().write(ProtocolConfig.GET_REVISION_LIST);
             Optional<RevisionList> oRList = RevisionList.loadFrom(socket.getInputStream());
             if (oRList.isPresent()) {

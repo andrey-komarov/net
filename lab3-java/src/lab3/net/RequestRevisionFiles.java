@@ -29,6 +29,7 @@ public class RequestRevisionFiles implements Runnable {
             Socket socket = new Socket();
             socket.connect(addr);
             OutputStream os = socket.getOutputStream();
+            System.err.println("REQ REVISION_FILES " + key.toShortString() + " from " + addr);
             os.write(ProtocolConfig.GET_REVISION_FILES);
             if (!key.store(os)) {
                 return;
