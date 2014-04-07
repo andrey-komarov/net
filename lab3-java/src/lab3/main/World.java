@@ -85,8 +85,8 @@ public class World {
     }
 
     public synchronized void acceptBroadcastMessage(BroadcastMessage msg, InetAddress source) {
-        System.err.println("HEARTBEAT " + msg + " from " + source);
         if (!knownRevisionListHashes.contains(msg.hash)) {
+            System.err.println("HEARTBEAT " + msg + " from " + source);
             System.err.println("... unknown hash");
             InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
             new Thread(new RequestRevisionList(addr, this)).start();
@@ -114,7 +114,7 @@ public class World {
         System.err.println("RECEIVED REVISION_FILES " + key.toShortString() + " : " + files + " from " + source);
         if (!files.verify(myKeys.params, key)) {
             System.err.println("... signature verification failed");
-//            return;
+            return;
         }
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
         new Thread(new DownloadMissedFiles(key, files, addr, this)).start();

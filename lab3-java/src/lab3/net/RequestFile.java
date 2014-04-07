@@ -93,6 +93,8 @@ public class RequestFile implements Runnable {
                     FileInputStream fis = new FileInputStream(tmp);
                     SHA256Hash tmpHash = SHA256.hash(fis);
 
+                    System.err.println("HASH = " + tmpHash);
+
                     FileInfo info = new FileInfo(tmpHash, name, key, tmp);
 
                     if (info.hash().equals(hash)) {
@@ -102,6 +104,8 @@ public class RequestFile implements Runnable {
                         System.out.println("New file: " + saveTo);
                         Files.move(tmp.toPath(), saveTo.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         world.accept(new FileInfo(tmpHash, name, key, saveTo));
+                    } else {
+                        System.err.println("Bad file hash. Expected: " + hash + ". Found: " + info.hash());
                     }
             }
         } catch (IOException e) {
