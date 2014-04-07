@@ -1,8 +1,11 @@
 package lab3.crypto.elgamal;
 
+import lab3.bytes.BigIntStorer;
+import lab3.bytes.Hex;
 import lab3.crypto.SHA256;
 import lab3.crypto.SHA256Hash;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -25,6 +28,7 @@ public class Verifier {
         }
         BigInteger lhs = params.g.modPow(hash.toBigInteger(), params.p);
         BigInteger rhs = key.key.modPow(sig.r, params.p).multiply(sig.r.modPow(sig.s, params.p)).mod(params.p);
+
         return lhs.equals(rhs);
     }
 

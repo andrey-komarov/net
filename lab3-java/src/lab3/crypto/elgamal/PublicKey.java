@@ -23,8 +23,13 @@ public class PublicKey implements Storable {
     @Override
     public boolean store(OutputStream os) {
         byte[] bytes = key.toByteArray();
-        int start = bytes.length == 129 ? 1 : 0;
-        return new ByteArrayStorer(bytes, start, bytes.length).store(os);
+        byte[] bytes1 = new byte[128];
+        if (bytes.length > 128) {
+            System.arraycopy(bytes, bytes.length - 128, bytes1, 0, 128);
+        } else {
+            System.arraycopy(bytes, 0, bytes1, 128 - bytes.length, bytes.length);
+        }
+        return new ByteArrayStorer(bytes1).store(os);
     }
 
     public static int byteLength() {

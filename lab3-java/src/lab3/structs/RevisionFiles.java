@@ -19,7 +19,7 @@ public class RevisionFiles implements Storable {
         this.signature = signature;
         this.version = version;
         this.files = new ArrayList<>(files);
-        Collections.sort(this.files);
+//        Collections.sort(this.files);
     }
 
     public RevisionFiles(Signer signer, int version, List<SHA256Hash> files) {
