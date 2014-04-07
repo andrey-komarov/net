@@ -24,7 +24,6 @@ public class SHA256 {
             sha256.update(buf, 0, r);
             len += r;
         }
-        System.err.println("File len = " + len);
         return new SHA256Hash(sha256.digest());
     }
 

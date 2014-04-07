@@ -93,8 +93,6 @@ public class RequestFile implements Runnable {
                     FileInputStream fis = new FileInputStream(tmp);
                     SHA256Hash tmpHash = SHA256.hash(fis);
 
-                    System.err.println("HASH = " + tmpHash);
-
                     FileInfo info = new FileInfo(tmpHash, name, key, tmp);
 
                     if (info.hash().equals(hash)) {
