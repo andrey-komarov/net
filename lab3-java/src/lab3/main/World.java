@@ -51,6 +51,14 @@ public class World {
         }
     }
 
+    public synchronized Optional<FileInfo> getFileInfo(SHA256Hash hash) {
+        if (knownFiles.containsKey(hash)) {
+            return Optional.of(knownFiles.get(hash));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     public synchronized boolean hasFileWithHash(SHA256Hash h) {
         return knownFiles.containsKey(h);
     }
@@ -80,6 +88,7 @@ public class World {
     }
 
     public synchronized void acceptRevisionFiles(PublicKey key, RevisionFiles files, InetAddress source) {
+        System.err.println("acceptRevisionFiles from " + source);
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
         new Thread(new DownloadMissedFiles(key, files, addr, this)).start();
     }

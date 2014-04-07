@@ -13,6 +13,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 public class RequestFile implements Runnable {
@@ -82,8 +83,11 @@ public class RequestFile implements Runnable {
                     FileInfo info = new FileInfo(tmpHash, name, key, tmp);
 
                     if (info.hash().equals(hash)) {
+                        File dir = new File(String.format("./files/%s", key.toShortString()));
+                        dir.mkdir();
                         File saveTo = new File(String.format("./files/%s/%s", key.toShortString(), name));
-                        tmp.renameTo(saveTo);
+                        System.err.println("Moving " + tmp + " to " + saveTo);
+                        Files.move(tmp.toPath(), saveTo.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         world.accept(new FileInfo(tmpHash, name, key, saveTo));
                     }
             }

@@ -1,6 +1,7 @@
 package lab3.main;
 
 import lab3.bytes.Storable;
+import lab3.crypto.SHA256;
 import lab3.net.BroadcastReceiver;
 import lab3.net.BroadcastSender;
 import lab3.proto.ProtocolConfig;
@@ -10,13 +11,13 @@ import lab3.structs.BroadcastMessage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-
         File dir = new File("./files");
         if (!dir.exists()) {
             dir.mkdir();

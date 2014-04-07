@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class SHA256 {
     private final static MessageDigest SHA256;
+    private final static byte[] buf = new byte[1 << 16];
     static {
         try {
             SHA256 = MessageDigest.getInstance("SHA-256");
@@ -18,8 +19,9 @@ public class SHA256 {
     synchronized public static SHA256Hash hash(InputStream is) throws IOException {
         SHA256.reset();
         int r;
-        while ((r = is.read()) != -1) {
-            SHA256.update((byte)r);
+        while ((r = is.read(buf)) != -1) {
+            System.err.println(r);
+            SHA256.update(buf, 0, r);
         }
         return new SHA256Hash(SHA256.digest());
     }
