@@ -22,7 +22,7 @@ public class SHA256Hash implements Storable, Comparable<SHA256Hash> {
     }
 
     public BigInteger toBigInteger() {
-        return new BigInteger(hash);
+        return BigIntFromBytes.construct(hash);
     }
 
     public static int byteLength() {

@@ -67,6 +67,5 @@ public class Router implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

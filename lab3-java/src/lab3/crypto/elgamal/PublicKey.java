@@ -1,9 +1,6 @@
 package lab3.crypto.elgamal;
 
-import lab3.bytes.ByteArrayLoader;
-import lab3.bytes.ByteArrayStorer;
-import lab3.bytes.Hex;
-import lab3.bytes.Storable;
+import lab3.bytes.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,13 +17,7 @@ public class PublicKey implements Storable {
     }
 
     public static Optional<PublicKey> loadFrom(InputStream is) {
-        return new ByteArrayLoader(byteLength()).load(is).map(PublicKey::constructPositive).map(PublicKey::new);
-    }
-
-    private static BigInteger constructPositive(byte[] bytes) {
-        byte[] bytes1 = new byte[bytes.length + 1];
-        System.arraycopy(bytes, 0, bytes1, 1, bytes.length);
-        return new BigInteger(bytes1);
+        return new ByteArrayLoader(byteLength()).load(is).map(BigIntFromBytes::construct).map(PublicKey::new);
     }
 
     @Override
