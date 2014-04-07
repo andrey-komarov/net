@@ -112,7 +112,7 @@ public class World {
         System.err.println("RECEIVED REVISION_FILES " + key.toShortString() + " : " + files + " from " + source);
         if (!files.verify(myKeys.params, key)) {
             System.err.println("... signature verification failed");
-            return;
+//            return;
         }
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
         new Thread(new DownloadMissedFiles(key, files, addr, this)).start();
