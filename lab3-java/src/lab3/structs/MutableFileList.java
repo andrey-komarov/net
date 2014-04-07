@@ -62,7 +62,7 @@ public class MutableFileList {
 
     public void removeFile(File file) throws IOException {
         PairFileHash p = new PairFileHash(file);
-        if (!files.contains(p)) {
+        if (files.contains(p)) {
             version++;
             files.remove(p);
         }

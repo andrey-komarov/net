@@ -22,6 +22,14 @@ public class FileInfo implements Storable {
         this.location = location;
     }
 
+    public FileInfo(PublicKey owner, File location) throws IOException {
+        this.owner = owner;
+        this.location = location;
+        FileInputStream fis = new FileInputStream(location);
+        this.contentsHash = SHA256.hash(fis);
+        this.name = location.getName();
+    }
+
     public SHA256Hash hash() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         owner.store(baos);

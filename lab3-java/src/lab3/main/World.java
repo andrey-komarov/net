@@ -11,6 +11,7 @@ import lab3.structs.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -105,13 +106,12 @@ public class World {
         try {
             myFiles.addFile(file);
 
-            FileInputStream fis = new FileInputStream(file);
-            FileInfo info = new FileInfo(SHA256.hash(fis), file.getName(), myKeys.publicKey, file);
+            FileInfo info = new FileInfo(myKeys.publicKey, file);
             if (!knownFiles.containsKey(info.hash())) {
                 knownFiles.put(info.hash(), info);
             }
             acceptRevisionFiles(myKeys.publicKey, myFiles.toRevisionFiles(), InetAddress.getLocalHost());
-            System.out.println("Added " + file);
+            System.out.println("Added " + file.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -120,7 +120,7 @@ public class World {
     public synchronized void unregisterFile(File file) {
         try {
             myFiles.removeFile(file);
-//            acceptRevisionFiles(myKeys.publicKey, myFiles.toRevisionFiles());
+            acceptRevisionFiles(myKeys.publicKey, myFiles.toRevisionFiles(), InetAddress.getLocalHost());
             System.out.println("Removed " + file);
         } catch (IOException e) {
             e.printStackTrace();
