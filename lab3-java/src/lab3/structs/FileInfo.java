@@ -54,10 +54,6 @@ public class FileInfo implements Storable {
             while ((r = is.read(buf)) != -1 && ok) {
                 os.write(buf, 0, r);
             }
-
-//            for (int i = 0; i < len && ok; i++) {
-//                os.write(is.read());
-//            }
         } catch (IOException e) {
             return false;
         }

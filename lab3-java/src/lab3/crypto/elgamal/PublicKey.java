@@ -5,6 +5,7 @@ import lab3.bytes.ByteArrayStorer;
 import lab3.bytes.Hex;
 import lab3.bytes.Storable;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,7 +20,13 @@ public class PublicKey implements Storable {
     }
 
     public static Optional<PublicKey> loadFrom(InputStream is) {
-        return new ByteArrayLoader(byteLength()).load(is).map(BigInteger::new).map(PublicKey::new);
+        return new ByteArrayLoader(byteLength()).load(is).map(PublicKey::constructPositive).map(PublicKey::new);
+    }
+
+    private static BigInteger constructPositive(byte[] bytes) {
+        byte[] bytes1 = new byte[bytes.length + 1];
+        System.arraycopy(bytes, 0, bytes1, 1, bytes.length);
+        return new BigInteger(bytes1);
     }
 
     @Override

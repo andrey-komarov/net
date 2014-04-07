@@ -76,9 +76,13 @@ public class RequestFile implements Runnable {
                     File tmp = File.createTempFile("dload", "");
                     FileOutputStream fos = new FileOutputStream(tmp);
 
-                    for (int i = 0; i < contentLen; i++) {
-                        fos.write(is.read());
+                    byte[] buf = new byte[Math.min(contentLen, 1 << 12)];
+
+                    int rr;
+                    while ((rr = is.read(buf)) != -1) {
+                        fos.write(buf, 0, rr);
                     }
+
                     fos.close();
 
                     FileInputStream fis = new FileInputStream(tmp);
