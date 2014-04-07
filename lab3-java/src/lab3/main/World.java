@@ -51,7 +51,13 @@ public class World {
 
     public synchronized Optional<FileInfo> getFileInfo(SHA256Hash hash) {
         if (knownFiles.containsKey(hash)) {
-            return Optional.of(knownFiles.get(hash));
+            FileInfo info = knownFiles.get(hash);
+            Optional<RevisionFiles> oRev = getRevisionFiles(info.owner);
+            if (oRev.isPresent() && oRev.get().files.contains(hash)) {
+                return Optional.of(knownFiles.get(hash));
+            } else {
+                return Optional.empty();
+            }
         } else {
             return Optional.empty();
         }
@@ -91,10 +97,6 @@ public class World {
         InetSocketAddress addr = new InetSocketAddress(source, ProtocolConfig.TCP_PORT);
         new Thread(new DownloadMissedFiles(key, files, addr, this)).start();
     }
-//
-//    public synchronized void commitRevisionFiles(PublicKey key, RevisionFiles files) {
-//        revisions.get(key).add(files);
-//    }
 
     public synchronized void accept(FileInfo info) {
         knownFiles.put(info.hash(), info);
